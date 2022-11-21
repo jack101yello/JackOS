@@ -76,15 +76,40 @@ struct regs {
 };
 
 unsigned char* exception_messages[] = { // Need to fill in the rest of these
-    "Division by Zero",
-    "Debug",
-    "Non Maskable Interrupt"
+    "Division by Zero",             // 0
+    "Debug",                        // 1
+    "Non Maskable Interrupt",       // 2
+    "Breakpoint",                   // 3
+    "Into Detected Overflow",       // 4
+    "Out of Bounds",                // 5
+    "Invalid Opcode",               // 6
+    "No Coprocessor",               // 7
+    "Double Fault",                 // 8
+    "Coprocessor Segment Overrun",  // 9
+    "Bad TSS",                      // 10
+    "Segment Not Present",          // 11
+    "Stack Fault",                  // 12
+    "General Protection Fault",     // 13
+    "Page Fault",                   // 14
+    "Unknown Interrupt",            // 15
+    "Coprocessor Fault",            // 16
+    "Alignment Check",              // 17
+    "Machine Check"                 // 18
+
 };
 
-void fault_handler(struct regs *r) {
-    if(r->int_no < 32) {
+void fault_handler(struct regs *r) { // Common exceptions
+    if(r -> int_no <= 18) {
         terminal_writestring(exception_messages[r->int_no]);
         terminal_writestring(" exception.\n");
         for(;;); // Infinite halt due to exception
+    }
+    else if(r -> int_no < 32) { // Reserved exceptions
+        terminal_writestring("Reserved exception.\n");
+        for(;;);
+    }
+    else { // Unknown exception
+        terminal_writestring("Unknown exception. (Code > 32)");
+        for(;;);
     }
 }
