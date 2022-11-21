@@ -68,13 +68,6 @@ void isrs_install() {
     idt_set_gate(31, (unsigned)isr31, 0x08, 0x8E);
 }
 
-struct regs {
-    unsigned int gs, fs, es, ds;
-    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
-    unsigned int int_no, err_code;
-    unsigned int eip, cs, eflags, useresp, ss;
-};
-
 unsigned char* exception_messages[] = { // Need to fill in the rest of these
     "Division by Zero",             // 0
     "Debug",                        // 1
