@@ -2,6 +2,7 @@
 #include "drivers/gdt/gdt.h"
 #include "drivers/idt/idt.h"
 #include "drivers/IO/io.h"
+#include "drivers/isr/isr.h"
 
 void kernel_main(void)
 {
@@ -13,11 +14,7 @@ void kernel_main(void)
 	terminal_writestring("Initializing Interrupt Descriptor Table.\n");
 	idt_install(); // IDT
 
-	terminal_writestring("Testing wait command\n");
-	
-	for(int i = 0; i < 5000000; i++) {
-		io_wait();
-	}
+	terminal_writestring("Setting up Interrupt Service Routines.\n");
+	isrs_install();
 
-	terminal_writestring("Complete!\n");
 }

@@ -2,8 +2,8 @@ CFLAGS?=-O2 -g
 CFLAGS:=$(CFLAGS) -Wall -Wextra
 
 SRCS = $(wildcard kernel/drivers/*/*.c)
-PROGS = $(patsubst %.c,%,$(SRCS))
-ASMSRCS = $(wildcard boot/*.asm)
+PROGS = $(patsubst %.c,%.o,$(SRCS))
+ASMSRCS = $(wildcard kernel/drivers/*/*.asm)
 ASMPROGS = $(patsubst %.asm,%,$(ASMSRCS))
 
 all: jackos.iso
@@ -17,10 +17,10 @@ boot.o: boot/boot.s
 kernel.o: kernel/kernel.c
 	i686-elf-gcc -c $< -o $@ -std=gnu99 -ffreestanding
 
-jackos.bin: boot.o kernel.o $(PROGS) $(ASMPROGS)
+jackos.bin: boot.o $(ASMPROGS) $(PROGS) kernel.o
 	i686-elf-gcc -T boot/linker.ld -o $@ -ffreestanding -O2 -nostdlib $^ -lgcc
 
-%: %.c
+%.o: %.c
 	i686-elf-gcc -c $< -o $@ -std=gnu99 -ffreestanding
 
 %: %.asm

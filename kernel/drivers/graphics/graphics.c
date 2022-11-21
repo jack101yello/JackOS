@@ -47,13 +47,23 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y)
 	const size_t index = y * VGA_WIDTH + x;
 	terminal_buffer[index] = vga_entry(c, color);
 }
- 
+
+void scroll() {
+	for(int i = 0; i < VGA_WIDTH * (VGA_HEIGHT-1); i++) {
+		terminal_buffer[i] = terminal_buffer[i+VGA_WIDTH];
+	}
+	--terminal_row;
+}
+
 void terminal_putchar(char c)
 {
 	if(c == '\n') { // Handling newline characters
 		terminal_column = 0;
 		++terminal_row;
 		return;
+	}
+	if(terminal_row >= VGA_HEIGHT) {
+		scroll();
 	}
 	terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
 	if (++terminal_column == VGA_WIDTH) {

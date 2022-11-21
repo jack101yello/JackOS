@@ -30,14 +30,18 @@ void idt_set_gate(unsigned char num, unsigned long base,
 
 void idt_install() {
     _idtp.limit = (sizeof(struct idt_entry) * 256) - 1;
-    _idtp.base = &idt;
+    _idtp.base = (unsigned int)&idt;
 
     for(int i = 0; i < 256; i++) { // Clear IDT to 0
         idt_set_gate(i, 0, 0, 0);
     }
 
-    // Set IDT entries here
-
+    // Add ISRs here using idt_set_gate()
     
     _idt_load();
+}
+
+void cli() {
+    asm("cli");
+    return;
 }
