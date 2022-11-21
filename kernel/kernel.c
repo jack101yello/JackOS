@@ -4,6 +4,7 @@
 #include "drivers/IO/io.h"
 #include "drivers/isr/isr.h"
 #include "drivers/irq/irq.h"
+#include "drivers/pit/pit.h"
 
 void kernel_main(void)
 {
@@ -16,11 +17,13 @@ void kernel_main(void)
 	idt_install(); // IDT
 
 	terminal_writestring("Setting up Interrupt Service Routines.\n");
-	isrs_install();
+	isrs_install(); // ISR
 
 	terminal_writestring("Setting up Interrupt Requests.\n");
-	irq_install();
-
+	irq_install(); // IRQ
 	__asm__ __volatile__ ("sti");
+
+	terminal_writestring("Setting up Programmable Interval Timer.\n");
+	timer_install();
 
 }
