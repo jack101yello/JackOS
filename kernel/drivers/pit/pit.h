@@ -7,6 +7,6 @@
 
 void timer_handler(struct regs *r);
 void timer_install();
-void timer_wait(int ticks);
+void timer_wait(int seconds);
 
 #endif

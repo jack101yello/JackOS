@@ -52,6 +52,9 @@ void scroll() {
 	for(int i = 0; i < VGA_WIDTH * (VGA_HEIGHT-1); i++) {
 		terminal_buffer[i] = terminal_buffer[i+VGA_WIDTH];
 	}
+	for(int i = VGA_WIDTH * (VGA_HEIGHT-1); i < VGA_WIDTH*VGA_HEIGHT; i++) {
+		terminal_buffer[i] = vga_entry(' ', terminal_color);
+	}
 	--terminal_row;
 }
 
