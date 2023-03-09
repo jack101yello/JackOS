@@ -9,6 +9,8 @@ void kernel_main(void)
 
 	terminal_initialize(); // Sets up graphical terminal for bootup
 
+	terminal_writestring("Kernel initialization:\n");
+
 	terminal_writestring("Initializing Global Descriptor Table.\n");
 	gdt_install(); // GDT
 
@@ -24,6 +26,8 @@ void kernel_main(void)
 	/*
 	Devices
 	*/
+
+	terminal_writestring("Device handling:\n");
 
 	terminal_writestring("Setting up Programmable Interval Timer.\n");
 	timer_install(); // PIT
