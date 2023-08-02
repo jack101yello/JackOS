@@ -120,14 +120,21 @@ uint32_t malloc(size_t size) { // Allocates memory on the heap
     return malloc(size); // We rerun this function now that we have a new page (yes, I agree that it is insane to make this recursive)
 }
 
-uint32_t realloc(size_t size) {
+// Reallocate a section of memory
+uint32_t realloc(uint32_t address, size_t size) {
     /*
-    IMPLEMENTATION REQUIRED
+    In this bitmap implementation of the heap, realloc really doesn't do much,
+    since that segment of memory is already marked as allocated.
     */
-   if(size == 0) { // Dummy code to remove warnings
-    return 0;
-   }
-   return 0;
+    unsigned int pageindex = getpagenumber(address);
+    page *p = table.pages[pageindex];
+    int relativelocation = address - p->start;
+    int block = relativelocation/128;
+    int index = relativelocation%32;
+    if(32-index < size) { // The data won't fit in this block
+        return NULL;
+    }
+    return address;
 }
 
 // Free memory on the heap (should be paired with malloc)
