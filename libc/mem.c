@@ -129,10 +129,9 @@ uint32_t realloc(uint32_t address, size_t size) {
     unsigned int pageindex = getpagenumber(address);
     page *p = table.pages[pageindex];
     int relativelocation = address - p->start;
-    int block = relativelocation/128;
     int index = relativelocation%32;
-    if(32-index < size) { // The data won't fit in this block
-        return NULL;
+    if(32-(size_t)index < size) { // The data won't fit in this block
+        return (uint32_t)NULL;
     }
     return address;
 }
