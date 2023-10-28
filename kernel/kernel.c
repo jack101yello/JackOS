@@ -1,6 +1,5 @@
 #include "../cpu/isr.h"
 #include "../drivers/screen.h"
-#include "terminal.h"
 #include "../libc/string.h"
 #include "../libc/mem.h"
 #include <stdint.h>
@@ -15,7 +14,4 @@ void kernel_main() {
     irq_install();
     kprint("Initializing the heap.\n");
     initialize_paging();
-
-    kprint("Startup complete. Booting terminal...\n");
-    terminal_input("NOP");
 }

@@ -4,7 +4,6 @@
 #include "screen.h"
 #include "../libc/string.h"
 #include "../libc/function.h"
-#include "../kernel/terminal.h"
 #include <stdint.h>
 
 #define BACKSPACE 0x0E
@@ -26,6 +25,10 @@ const char sc_ascii[] = { '?', '?', '1', '2', '3', '4', '5', '6',
         'B', 'N', 'M', ',', '.', '/', '?', '?', '?', ' '};
 
 static void keyboard_callback(registers_t *regs) {
+    /*
+    This function has been rendered defunct for testing purposes.
+    */
+    return;
     /* The PIC leaves us the scancode in port 0x60 */
     uint8_t scancode = port_byte_in(0x60);
     
@@ -33,10 +36,6 @@ static void keyboard_callback(registers_t *regs) {
     if (scancode == BACKSPACE) {
         backspace(key_buffer);
         kprint_backspace();
-    } else if (scancode == ENTER) {
-        kprint("\n");
-        terminal_input(key_buffer); /* kernel-controlled function */
-        key_buffer[0] = '\0';
     } else {
         char letter = sc_ascii[(int)scancode];
         /* Remember that kprint only accepts char[] */
