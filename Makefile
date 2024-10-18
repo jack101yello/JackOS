@@ -2,7 +2,7 @@ GPPPARAMS = -m32 -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-excep
 ASPARAMS = -32
 LDPARAMS = -melf_i386
 
-objects = loader.o gdt.o port.o interruptstubs.o interrupts.o kernel.o
+objects = loader.o gdt.o port.o interruptstubs.o interrupts.o keyboard.o kernel.o
 
 %.o: %.cpp
 	g++ $(GPPPARAMS) -o $@ -c $<
@@ -22,7 +22,7 @@ install: jackoskernel.bin
 jackos.iso: install
 
 run: jackos.iso
-	qemu-system-i386 -D ./qemu-debug-log -cdrom jackos.iso
+	qemu-system-i386 -cdrom jackos.iso
 
 clean: 
 	rm -v *.o

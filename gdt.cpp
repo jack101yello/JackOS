@@ -14,7 +14,7 @@ dataSegmentSelector(0, 64*1024*1024, 0x92)
 }
 
 GlobalDescriptorTable::~GlobalDescriptorTable() {
-
+    
 }
 
 uint16_t GlobalDescriptorTable::DataSegmentSelector() {
