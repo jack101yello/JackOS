@@ -56,8 +56,8 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     InterruptManager interrupts(&gdt);
 
     printf("Initiating keyboard and mouse.\n");
-    KeyboardDriver keyboard(&interrupts);
     MouseDriver mouse(&interrupts);
+    KeyboardDriver keyboard(&interrupts);
 
     printf("Enabling Interrupts.\n");
     interrupts.Activate();
