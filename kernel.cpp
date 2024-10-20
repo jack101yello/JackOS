@@ -38,6 +38,53 @@ void printf(const char* str) {
     }
 }
 
+void printfNum(int x) {
+    char foo[] = "SXX";
+    if(x >= 0) {
+        foo[0] = ' ';
+    }
+    else {
+        foo[0] = '-';
+    }
+    foo[1] = (char)(((x/10) % 10) + 48);
+    foo[2] = (char)((x % 10) + 48);
+    printf(foo);
+}
+
+class PrintKeyboardEventHandler : public KeyboardEventHandler {
+    public:
+        void OnKeyDown(char c) {
+            char foo[] = " ";
+            foo[0] = c;
+            printf(foo);
+        }
+};
+
+class MouseToConsole : public MouseEventHandler {
+    uint8_t x, y;
+    public:
+        MouseToConsole() {
+            uint16_t* VideoMemory = (uint16_t*)0xb8000;
+            x = 40;
+            y = 12;
+            VideoMemory[80*y+x] = ((VideoMemory[80*y+x] & 0xF000) >> 4) | ((VideoMemory[80*y+x] & 0x0F00) << 4) | ((VideoMemory[80*y+x] & 0x00FF));
+        }
+        void OnMouseMove(int xoffset, int yoffset) {
+            static uint16_t* VideoMemory = (uint16_t*)0xb8000;
+            VideoMemory[80*y+x] = ((VideoMemory[80*y+x] & 0xF000) >> 4) | ((VideoMemory[80*y+x] & 0x0F00) << 4) | ((VideoMemory[80*y+x] & 0x00FF));
+            int oldx = x;
+            int oldy = y;
+            x += xoffset;
+            if(x >= 80) x = 79;
+            if(xoffset >= 80 && x > oldx) x = oldx;
+            y += yoffset;
+            if(y >= 25) y = 24;
+            if(yoffset > -25 && y > oldy) y = oldy;
+            // if(yoffset <= -25 && y < oldy) y = oldy;
+            VideoMemory[80*y+x] = ((VideoMemory[80*y+x] & 0xF000) >> 4) | ((VideoMemory[80*y+x] & 0x0F00) << 4) | ((VideoMemory[80*y+x] & 0x00FF));
+        }
+};
+
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
@@ -58,14 +105,15 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
 
     printf("Setting up drivers...\n");
     DriverManager drvManager;
-    /* The mouse has to be initiated before the keyboard,
-    or else the keyboard does not work. Reason unknown.
-    */
+
     printf("\tInitiating mouse.\n");
-    MouseDriver mouse(&interrupts);
+    MouseToConsole mhandler;
+    MouseDriver mouse(&interrupts, &mhandler);
     drvManager.AddDriver(&mouse);
+
     printf("\tInitiating keyboard.\n");
-    KeyboardDriver keyboard(&interrupts);
+    PrintKeyboardEventHandler kbhandler;
+    KeyboardDriver keyboard(&interrupts, &kbhandler);
     drvManager.AddDriver(&keyboard);
 
     printf("Activating drivers.\n");
