@@ -1,6 +1,7 @@
 #include "types.h"
 #include "gdt.h"
 #include "interrupts.h"
+#include "driver.h"
 #include "keyboard.h"
 #include "mouse.h"
 
@@ -55,9 +56,20 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     printf("Setting up IDT.\n");
     InterruptManager interrupts(&gdt);
 
-    printf("Initiating keyboard and mouse.\n");
+    printf("Setting up drivers...\n");
+    DriverManager drvManager;
+    /* The mouse has to be initiated before the keyboard,
+    or else the keyboard does not work. Reason unknown.
+    */
+    printf("\tInitiating mouse.\n");
     MouseDriver mouse(&interrupts);
+    drvManager.AddDriver(&mouse);
+    printf("\tInitiating keyboard.\n");
     KeyboardDriver keyboard(&interrupts);
+    drvManager.AddDriver(&keyboard);
+
+    printf("Activating drivers.\n");
+    drvManager.ActivateAll();
 
     printf("Enabling Interrupts.\n");
     interrupts.Activate();
