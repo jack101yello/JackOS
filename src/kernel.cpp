@@ -5,6 +5,7 @@
 #include <drivers/keyboard.h>
 #include <drivers/mouse.h>
 #include <hardware/pci.h>
+#include <drivers/vga.h>
 
 using namespace jackos;
 using namespace jackos::common;
@@ -121,11 +122,22 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     PCIController pcicontroller;
     pcicontroller.SelectDrivers(&drvManager, &interrupts);
 
+    printf("Initializing graphics.\n");
+    VideoGraphicsArray vga;
+
     printf("Activating drivers.\n");
     drvManager.ActivateAll();
 
     printf("Enabling Interrupts.\n");
     interrupts.Activate();
+
+    printf("Switching to graphics mode.\n");
+    vga.SetMode(320, 200, 8);
+    for(int32_t y = 0; y < 200; y++) {
+        for(int32_t x = 0; x < 320; x++) {
+            vga.PutPixel(x, y, 0x00, 0x00, 0xA8);
+        }
+    }
 
     for(;;); // Infinite loop
 }
