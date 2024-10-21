@@ -1,4 +1,7 @@
-#include "port.h"
+#include <hardware/port.h>
+
+using namespace jackos::common;
+using namespace jackos::hardware;
 
 Port::Port(uint16_t portnumber) {
     this -> portnumber = portnumber;

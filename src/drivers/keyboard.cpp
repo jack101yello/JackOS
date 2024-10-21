@@ -1,4 +1,8 @@
-#include "keyboard.h"
+#include <drivers/keyboard.h>
+
+using namespace jackos::common;
+using namespace jackos::drivers;
+using namespace jackos::hardware;
 
 KeyboardEventHandler::KeyboardEventHandler() {
 

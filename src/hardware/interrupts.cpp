@@ -1,4 +1,7 @@
-#include "interrupts.h"
+#include <hardware/interrupts.h>
+
+using namespace jackos::common;
+using namespace jackos::hardware;
 
 void printf(const char* str);
 

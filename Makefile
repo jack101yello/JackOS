@@ -1,31 +1,44 @@
-GPPPARAMS = -m32 -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore
+GPPPARAMS = -m32 -Iinclude -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore
 ASPARAMS = -32
 LDPARAMS = -melf_i386
 
-objects = loader.o gdt.o driver.o port.o interruptstubs.o interrupts.o keyboard.o mouse.o kernel.o
+objects = obj/loader.o \
+		  obj/gdt.o \
+		  obj/drivers/driver.o \
+		  obj/hardware/port.o \
+		  obj/hardware/interruptstubs.o \
+		  obj/hardware/interrupts.o \
+		  obj/drivers/keyboard.o \
+		  obj/drivers/mouse.o \
+		  obj/kernel.o
 
-%.o: %.cpp
+obj/%.o: src/%.cpp
+	mkdir -p $(@D)
 	g++ $(GPPPARAMS) -o $@ -c $<
 
-%.o: %.s
+obj/%.o: src/%.s
+	mkdir -p $(@D)
 	as $(ASPARAMS) -o $@ $<
 
 jackoskernel.bin: linker.ld $(objects)
 	ld $(LDPARAMS) -T $< -o $@ $(objects)
 
-install: jackoskernel.bin
-	mkdir -p isodir/boot/grub
-	cp jackoskernel.bin isodir/boot/jackos.bin
-	cp grub.cfg isodir/boot/grub/grub.cfg
+jackos.iso: jackoskernel.bin
+	mkdir isodir
+	mkdir isodir/boot
+	mkdir isodir/boot/grub
+	cp $< isodir/boot/jackoskernel.bin
+	echo 'menuentry "JackOS" {' > isodir/boot/grub/grub.cfg
+	echo '	multiboot /boot/jackoskernel.bin' >> isodir/boot/grub/grub.cfg
+	echo '}' >> isodir/boot/grub/grub.cfg
 	grub-mkrescue -o jackos.iso isodir
 
-jackos.iso: install
+install: jackos.iso
 
 run: jackos.iso
 	qemu-system-i386 -cdrom jackos.iso
 
+.PHONY: clean
 clean: 
-	rm -v *.o
-	rm -v *.bin
-	rm -v *.iso
-	rm -rfv isodir
+	rm -rfv isodir obj
+	rm -v *.bin *.iso

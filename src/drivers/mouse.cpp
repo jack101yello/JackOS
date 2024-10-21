@@ -1,4 +1,9 @@
-#include "mouse.h"
+#include <drivers/mouse.h>
+
+using namespace jackos::common;
+using namespace jackos::drivers;
+using namespace jackos::hardware;
+
 
 MouseEventHandler::MouseEventHandler() {
 
