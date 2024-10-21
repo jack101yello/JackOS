@@ -119,7 +119,7 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
 
     printf("Initializing Peripheral Component Interconnect (PCI).\n");
     PCIController pcicontroller;
-    pcicontroller.SelectDrivers(&drvManager);
+    pcicontroller.SelectDrivers(&drvManager, &interrupts);
 
     printf("Activating drivers.\n");
     drvManager.ActivateAll();

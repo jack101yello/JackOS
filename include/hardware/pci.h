@@ -8,6 +8,19 @@
 
 namespace jackos {
     namespace hardware {
+        enum BaseAddressRegisterType {
+            MemoryMapping = 0,
+            InputOutput = 1
+        };
+
+        class BaseAddressRegister {
+            public:
+                bool prefetchable;
+                jackos::common::uint8_t* address;
+                jackos::common::uint32_t size;
+                BaseAddressRegisterType type;
+        };
+
         class PCIDeviceDescriptor {
             public:
                 jackos::common::uint32_t portbase;
@@ -39,8 +52,10 @@ namespace jackos {
                 jackos::common::uint32_t Read(jackos::common::uint16_t bus, jackos::common::uint16_t device, jackos::common::uint16_t function, jackos::common::uint32_t registeroffset);
                 void Write(jackos::common::uint16_t bus, jackos::common::uint16_t device, jackos::common::uint16_t function, jackos::common::uint32_t registeroffset, jackos::common::uint32_t value);
                 bool DeviceHasFunctions(jackos::common::uint16_t bus, jackos::common::uint16_t device);
-                void SelectDrivers(jackos::drivers::DriverManager* driverManager);
+                void SelectDrivers(jackos::drivers::DriverManager* driverManager, jackos::hardware::InterruptManager* manager);
+                jackos::drivers::Driver* GetDriver(PCIDeviceDescriptor dev_desc, jackos::hardware::InterruptManager* interruptManager);
                 PCIDeviceDescriptor GetDeviceDescriptor(jackos::common::uint16_t bus, jackos::common::uint16_t device, jackos::common::uint16_t function);
+                BaseAddressRegister GetBaseAddressRegister(jackos::common::uint16_t bus, jackos::common::uint16_t device, jackos::common::uint16_t function, jackos::common::uint16_t bar);
         };
     }
 }
