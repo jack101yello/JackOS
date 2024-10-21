@@ -4,6 +4,7 @@
 #include <drivers/driver.h>
 #include <drivers/keyboard.h>
 #include <drivers/mouse.h>
+#include <hardware/pci.h>
 
 using namespace jackos;
 using namespace jackos::common;
@@ -43,17 +44,12 @@ void printf(const char* str) {
     }
 }
 
-void printfNum(int x) {
-    char foo[] = "SXX";
-    if(x >= 0) {
-        foo[0] = ' ';
-    }
-    else {
-        foo[0] = '-';
-    }
-    foo[1] = (char)(((x/10) % 10) + 48);
-    foo[2] = (char)((x % 10) + 48);
-    printf(foo);
+void printfhex(int val) {
+    char msg[] = "00";
+    char hex[] = "0123456789ABCDEF";
+    msg[0] = hex[(val >> 4) & 0x0F];
+    msg[1] = hex[val & 0x0F];
+    printf(msg);
 }
 
 class PrintKeyboardEventHandler : public KeyboardEventHandler {
@@ -102,10 +98,10 @@ extern "C" void callConstructors() {
 extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     printf("Initializing JackOS Kernel\n");
 
-    printf("Setting up GDT.\n");
+    printf("Setting up Global Descriptor Table (GDT).\n");
     GlobalDescriptorTable gdt;
 
-    printf("Setting up IDT.\n");
+    printf("Setting up Interrupt Descriptor table (IDT).\n");
     InterruptManager interrupts(&gdt);
 
     printf("Setting up drivers...\n");
@@ -120,6 +116,10 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     PrintKeyboardEventHandler kbhandler;
     KeyboardDriver keyboard(&interrupts, &kbhandler);
     drvManager.AddDriver(&keyboard);
+
+    printf("Initializing Peripheral Component Interconnect (PCI).\n");
+    PCIController pcicontroller;
+    pcicontroller.SelectDrivers(&drvManager);
 
     printf("Activating drivers.\n");
     drvManager.ActivateAll();
