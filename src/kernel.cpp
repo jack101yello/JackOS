@@ -6,11 +6,14 @@
 #include <drivers/mouse.h>
 #include <hardware/pci.h>
 #include <drivers/vga.h>
+#include <gui/desktop.h>
+#include <gui/window.h>
 
 using namespace jackos;
 using namespace jackos::common;
 using namespace jackos::drivers;
 using namespace jackos::hardware;
+using namespace jackos::gui;
 
 void printf(const char* str) {
     static uint16_t* VideoMemory = (uint16_t*)0xb8000;
@@ -63,7 +66,7 @@ class PrintKeyboardEventHandler : public KeyboardEventHandler {
 };
 
 class MouseToConsole : public MouseEventHandler {
-    uint8_t x, y;
+    int8_t x, y;
     public:
         MouseToConsole() {
             uint16_t* VideoMemory = (uint16_t*)0xb8000;
@@ -74,15 +77,12 @@ class MouseToConsole : public MouseEventHandler {
         void OnMouseMove(int xoffset, int yoffset) {
             static uint16_t* VideoMemory = (uint16_t*)0xb8000;
             VideoMemory[80*y+x] = ((VideoMemory[80*y+x] & 0xF000) >> 4) | ((VideoMemory[80*y+x] & 0x0F00) << 4) | ((VideoMemory[80*y+x] & 0x00FF));
-            int oldx = x;
-            int oldy = y;
             x += xoffset;
+            if(x < 0) x = 0;
             if(x >= 80) x = 79;
-            if(xoffset >= 80 && x > oldx) x = oldx;
             y += yoffset;
+            if(y < 0) y = 0;
             if(y >= 25) y = 24;
-            if(yoffset > -25 && y > oldy) y = oldy;
-            // if(yoffset <= -25 && y < oldy) y = oldy;
             VideoMemory[80*y+x] = ((VideoMemory[80*y+x] & 0xF000) >> 4) | ((VideoMemory[80*y+x] & 0x0F00) << 4) | ((VideoMemory[80*y+x] & 0x00FF));
         }
 };
@@ -105,17 +105,20 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     printf("Setting up Interrupt Descriptor table (IDT).\n");
     InterruptManager interrupts(&gdt);
 
+    printf("Instantiating Desktop.\n");
+    Desktop desktop(320, 200, 0x00, 0x00, 0xA8);
+
     printf("Setting up drivers...\n");
     DriverManager drvManager;
 
     printf("\tInitiating mouse.\n");
-    MouseToConsole mhandler;
-    MouseDriver mouse(&interrupts, &mhandler);
+    // MouseToConsole mhandler;
+    MouseDriver mouse(&interrupts, &desktop);
     drvManager.AddDriver(&mouse);
 
     printf("\tInitiating keyboard.\n");
-    PrintKeyboardEventHandler kbhandler;
-    KeyboardDriver keyboard(&interrupts, &kbhandler);
+    // PrintKeyboardEventHandler kbhandler;
+    KeyboardDriver keyboard(&interrupts, &desktop);
     drvManager.AddDriver(&keyboard);
 
     printf("Initializing Peripheral Component Interconnect (PCI).\n");
@@ -128,12 +131,19 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     printf("Activating drivers.\n");
     drvManager.ActivateAll();
 
-    printf("Enabling Interrupts.\n");
-    interrupts.Activate();
 
     printf("Switching to graphics mode.\n");
     vga.SetMode(320, 200, 8);
-    vga.FillRectangle(0, 0, 320, 200, 0x00, 0x00, 0xA8);
 
-    for(;;); // Infinite loop
+    Window win1(&desktop, 10, 10, 20, 20, 0xA8, 0x00, 0x00);
+    desktop.AddChild(&win1);
+    Window win2(&desktop, 40, 15, 30, 30, 0x00, 0xA8, 0x00);
+    desktop.AddChild(&win2);
+
+    printf("Enabling Interrupts.\n");
+    interrupts.Activate();
+
+    for(;;) { // Infinite loop
+        desktop.Draw(&vga);
+    }
 }

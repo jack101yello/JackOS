@@ -31,8 +31,8 @@ namespace jackos {
 
                 virtual bool SupportsMode(jackos::common::uint32_t width, jackos::common::uint32_t height, jackos::common::uint32_t colordepth);
                 virtual bool SetMode(jackos::common::uint32_t width, jackos::common::uint32_t height, jackos::common::uint32_t colordepth);
-                virtual void PutPixel(jackos::common::uint32_t x, jackos::common::uint32_t y, jackos::common::uint8_t r, jackos::common::uint8_t g, jackos::common::uint8_t b);
-                virtual void PutPixel(jackos::common::uint32_t x, jackos::common::uint32_t y, jackos::common::uint8_t colorcode);
+                virtual void PutPixel(jackos::common::int32_t x, jackos::common::int32_t y, jackos::common::uint8_t r, jackos::common::uint8_t g, jackos::common::uint8_t b);
+                virtual void PutPixel(jackos::common::int32_t x, jackos::common::int32_t y, jackos::common::uint8_t colorcode);
                 virtual void FillRectangle(jackos::common::uint32_t x, jackos::common::uint32_t y, jackos::common::uint32_t w, jackos::common::uint32_t h, jackos::common::uint8_t r, jackos::common::uint8_t g, jackos::common::uint8_t b);
         };
     }

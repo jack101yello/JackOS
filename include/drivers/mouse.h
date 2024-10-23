@@ -1,4 +1,4 @@
-#ifndef __jackos__drivers_mouse_H
+#ifndef __jackos_drivers_mouse_H
 #define __jackos_drivers_mouse_H
 
 #include <common/types.h>
