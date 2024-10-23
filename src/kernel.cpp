@@ -133,11 +133,7 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
 
     printf("Switching to graphics mode.\n");
     vga.SetMode(320, 200, 8);
-    for(int32_t y = 0; y < 200; y++) {
-        for(int32_t x = 0; x < 320; x++) {
-            vga.PutPixel(x, y, 0x00, 0x00, 0xA8);
-        }
-    }
+    vga.FillRectangle(0, 0, 320, 200, 0x00, 0x00, 0xA8);
 
     for(;;); // Infinite loop
 }
