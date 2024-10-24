@@ -29,9 +29,7 @@ jackoskernel.bin: linker.ld $(objects)
 	ld $(LDPARAMS) -T $< -o $@ $(objects)
 
 jackos.iso: jackoskernel.bin
-	mkdir isodir
-	mkdir isodir/boot
-	mkdir isodir/boot/grub
+	mkdir -p isodir/boot/grub
 	cp $< isodir/boot/jackoskernel.bin
 	echo 'menuentry "JackOS" {' > isodir/boot/grub/grub.cfg
 	echo '	multiboot /boot/jackoskernel.bin' >> isodir/boot/grub/grub.cfg

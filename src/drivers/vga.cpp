@@ -120,9 +120,12 @@ void VideoGraphicsArray::PutPixel(int32_t x, int32_t y, uint8_t colorIndex) {
     *pixelAddress = colorIndex;
 }
 
+void printf(const char* str);
+void printfhex(int val);
+
 void VideoGraphicsArray::FillRectangle(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t r, uint8_t g, uint8_t b) {
-    for(int32_t Y = 0; Y < h; Y++) {
-        for(int32_t X = 0; X < w; X++) {
+    for(int32_t Y = y; Y < h+y; Y++) {
+        for(int32_t X = x; X < w+x; X++) {
             PutPixel(X, Y, r, g, b);
         }
     }
