@@ -20,7 +20,7 @@ void Window::OnMouseDown(int32_t x, int32_t y, uint8_t button) {
 
 void Window::OnMouseUp(int32_t x, int32_t y, uint8_t button) {
     Dragging = false;
-    CompositeWidget::OnMouseDown(x, y, button);
+    CompositeWidget::OnMouseUp(x, y, button);
 }
 
 void Window::OnMouseMove(int32_t oldx, int32_t oldy, int32_t newx, int32_t newy) {

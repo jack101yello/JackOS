@@ -8,6 +8,7 @@
 #include <drivers/vga.h>
 #include <gui/desktop.h>
 #include <gui/window.h>
+#include <multitasking.h>
 
 using namespace jackos;
 using namespace jackos::common;
@@ -102,48 +103,66 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     printf("Setting up Global Descriptor Table (GDT).\n");
     GlobalDescriptorTable gdt;
 
-    printf("Setting up Interrupt Descriptor table (IDT).\n");
-    InterruptManager interrupts(&gdt);
+    TaskManager taskManager;
 
+    printf("Setting up Interrupt Descriptor table (IDT).\n");
+    InterruptManager interrupts(&gdt, &taskManager);
+
+    #ifdef GRAPHICS_MODE
     printf("Instantiating Desktop.\n");
     Desktop desktop(320, 200, 0x00, 0x00, 0xA8);
+    #endif
 
     printf("Setting up drivers...\n");
     DriverManager drvManager;
 
     printf("\tInitiating mouse.\n");
     // MouseToConsole mhandler;
+    #ifdef GRAPHICS_MODE
     MouseDriver mouse(&interrupts, &desktop);
+    #else
+    MouseToConsole mousehandler;
+    MouseDriver mouse(&interrupts, &mousehandler);
+    #endif
     drvManager.AddDriver(&mouse);
 
     printf("\tInitiating keyboard.\n");
     // PrintKeyboardEventHandler kbhandler;
+    #ifdef GRAPHICS_MODE
     KeyboardDriver keyboard(&interrupts, &desktop);
+    #else
+    PrintKeyboardEventHandler kbhandler;
+    KeyboardDriver keyboard(&interrupts, &kbhandler);
+    #endif
     drvManager.AddDriver(&keyboard);
 
     printf("Initializing Peripheral Component Interconnect (PCI).\n");
     PCIController pcicontroller;
     pcicontroller.SelectDrivers(&drvManager, &interrupts);
 
+    #ifdef GRAPHICS_MODE
     printf("Initializing graphics.\n");
     VideoGraphicsArray vga;
+    #endif
 
     printf("Activating drivers.\n");
     drvManager.ActivateAll();
 
-
+    #ifdef GRAPHICS_MODE
     printf("Switching to graphics mode.\n");
     vga.SetMode(320, 200, 8);
-
     Window win1(&desktop, 10, 10, 20, 20, 0xA8, 0x00, 0x00);
     desktop.AddChild(&win1);
     Window win2(&desktop, 40, 15, 30, 30, 0x00, 0xA8, 0x00);
     desktop.AddChild(&win2);
+    #endif
 
     printf("Enabling Interrupts.\n");
     interrupts.Activate();
 
     for(;;) { // Infinite loop
+        #ifdef GRAPHICS_MODE
         desktop.Draw(&vga);
+        #endif
     }
 }

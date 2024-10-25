@@ -4,6 +4,7 @@
 #include <hardware/port.h>
 #include <common/types.h>
 #include <gdt.h>
+#include <multitasking.h>
 
 namespace jackos {
     namespace hardware {
@@ -25,6 +26,7 @@ namespace jackos {
             protected:
                 static InterruptManager* ActiveInterruptManager;
                 InterruptHandler* handlers[256]; // Array of interrupt handlers
+                TaskManager* taskManager;
 
                 struct GateDescriptor {
                     jackos::common::uint16_t handlerAddressLowBits;
@@ -55,19 +57,32 @@ namespace jackos {
                 Port8BitSlow picSlaveData;
 
             public:
-                InterruptManager(GlobalDescriptorTable* gdt);
+                InterruptManager(GlobalDescriptorTable* gdt, jackos::TaskManager* taskManager);
                 ~InterruptManager();
 
                 void Activate();
                 void Deactivate();
 
-                static jackos::common::uint32_t handleInterrupt(jackos::common::uint8_t interruptNumnber, jackos::common::uint32_t esp);
+                static jackos::common::uint32_t handleInterrupt(jackos::common::uint8_t interruptNumber, jackos::common::uint32_t esp);
                 jackos::common::uint32_t doHandleInterrupt(jackos::common::uint8_t interruptNumber, jackos::common::uint32_t esp);
 
                 static void IgnoreInterruptRequest();
                 static void HandleInterruptRequest0x00();
                 static void HandleInterruptRequest0x01();
+                static void HandleInterruptRequest0x02();
+                static void HandleInterruptRequest0x03();
+                static void HandleInterruptRequest0x04();
+                static void HandleInterruptRequest0x05();
+                static void HandleInterruptRequest0x06();
+                static void HandleInterruptRequest0x07();
+                static void HandleInterruptRequest0x08();
+                static void HandleInterruptRequest0x09();
+                static void HandleInterruptRequest0x0A();
+                static void HandleInterruptRequest0x0B();
                 static void HandleInterruptRequest0x0C();
+                static void HandleInterruptRequest0x0D();
+                static void HandleInterruptRequest0x0E();
+                static void HandleInterruptRequest0x0F();
         };
     }
 }
