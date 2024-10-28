@@ -42,13 +42,14 @@ void InterruptManager::SetInterruptDescriptorTableEntry(
     interruptDescriptorTable[interruptNumber].reserved = 0;
 }
 
-InterruptManager::InterruptManager(GlobalDescriptorTable* gdt, TaskManager* taskManager)
+InterruptManager::InterruptManager(uint8_t hardwareoffset, GlobalDescriptorTable* gdt, TaskManager* taskManager)
 : picMasterCommand(0x20),
 picMasterData(0x21),
 picSlaveCommand(0xA0),
 picSlaveData(0xA1)
 {
     this->taskManager = taskManager;
+    this->hardwareoffset = hardwareoffset;
     uint16_t CodeSegment = gdt -> CodeSegmentSelector();
     const uint8_t IDT_INTERRUPT_GATE = 0xE;
 
@@ -57,22 +58,43 @@ picSlaveData(0xA1)
         handlers[i] = 0;
     }
 
-    SetInterruptDescriptorTableEntry(0x20, CodeSegment, &HandleInterruptRequest0x00, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x21, CodeSegment, &HandleInterruptRequest0x01, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x22, CodeSegment, &HandleInterruptRequest0x02, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x23, CodeSegment, &HandleInterruptRequest0x03, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x24, CodeSegment, &HandleInterruptRequest0x04, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x25, CodeSegment, &HandleInterruptRequest0x05, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x26, CodeSegment, &HandleInterruptRequest0x06, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x27, CodeSegment, &HandleInterruptRequest0x07, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x28, CodeSegment, &HandleInterruptRequest0x08, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x29, CodeSegment, &HandleInterruptRequest0x09, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x2A, CodeSegment, &HandleInterruptRequest0x0A, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x2B, CodeSegment, &HandleInterruptRequest0x0B, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x2C, CodeSegment, &HandleInterruptRequest0x0C, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x2D, CodeSegment, &HandleInterruptRequest0x0D, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x2E, CodeSegment, &HandleInterruptRequest0x0E, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x2F, CodeSegment, &HandleInterruptRequest0x0F, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x00, CodeSegment, &HandleException0x00, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x01, CodeSegment, &HandleException0x01, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x02, CodeSegment, &HandleException0x02, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x03, CodeSegment, &HandleException0x03, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x04, CodeSegment, &HandleException0x04, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x05, CodeSegment, &HandleException0x05, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x06, CodeSegment, &HandleException0x06, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x07, CodeSegment, &HandleException0x07, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x08, CodeSegment, &HandleException0x08, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x09, CodeSegment, &HandleException0x09, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x0A, CodeSegment, &HandleException0x0A, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x0B, CodeSegment, &HandleException0x0B, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x0C, CodeSegment, &HandleException0x0C, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x0D, CodeSegment, &HandleException0x0D, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x0E, CodeSegment, &HandleException0x0E, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x0F, CodeSegment, &HandleException0x0F, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x10, CodeSegment, &HandleException0x10, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x11, CodeSegment, &HandleException0x11, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x12, CodeSegment, &HandleException0x12, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x13, CodeSegment, &HandleException0x13, 0, IDT_INTERRUPT_GATE);
+
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x00, CodeSegment, &HandleInterruptRequest0x00, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x01, CodeSegment, &HandleInterruptRequest0x01, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x02, CodeSegment, &HandleInterruptRequest0x02, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x03, CodeSegment, &HandleInterruptRequest0x03, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x04, CodeSegment, &HandleInterruptRequest0x04, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x05, CodeSegment, &HandleInterruptRequest0x05, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x06, CodeSegment, &HandleInterruptRequest0x06, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x07, CodeSegment, &HandleInterruptRequest0x07, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x08, CodeSegment, &HandleInterruptRequest0x08, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x09, CodeSegment, &HandleInterruptRequest0x09, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x0A, CodeSegment, &HandleInterruptRequest0x0A, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x0B, CodeSegment, &HandleInterruptRequest0x0B, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x0C, CodeSegment, &HandleInterruptRequest0x0C, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x0D, CodeSegment, &HandleInterruptRequest0x0D, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x0E, CodeSegment, &HandleInterruptRequest0x0E, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x0F, CodeSegment, &HandleInterruptRequest0x0F, 0, IDT_INTERRUPT_GATE);
 
     picMasterCommand.Write(0x11);
     picSlaveCommand.Write(0x11);
@@ -92,7 +114,7 @@ picSlaveData(0xA1)
 }
 
 InterruptManager::~InterruptManager() {
-
+    Deactivate();
 }
 
 void InterruptManager::Activate() {
@@ -117,11 +139,38 @@ uint32_t InterruptManager::handleInterrupt(uint8_t interruptNumber, uint32_t esp
     return esp;
 }
 
+void kpanic(uint8_t interruptNumber, uint32_t esp) {
+    switch(interruptNumber) { // Check for exceptions
+        case 0x00: printf("\n/// Exception! 0x00\n"); break; // Single-step interrupt
+        case 0x02: printf("\n/// Exception! 0x02\n"); break; // Non-maskable interrupt (NMI)
+        case 0x03: printf("\n/// Exception! 0x03\n"); break; // Breakpoint
+        case 0x04: printf("\n/// Exception! 0x04\n"); break; // Overflow
+        case 0x05: printf("\n/// Exception! 0x05\n"); break; // Bound range exceeded
+        case 0x06: printf("\n/// Exception! 0x06\n"); break; // Invalid opcode
+        case 0x07: printf("\n/// Exception! 0x07\n"); break; // Coprocessor not available
+        case 0x08: printf("\n/// Exception! 0x08\n"); break; // Double fault
+        case 0x09: printf("\n/// Exception! 0x09\n"); break; // Coprocessor segment overrun
+        case 0x0A: printf("\n/// Exception! 0x0A\n"); break; // Invalid task state segment
+        case 0x0B: printf("\n/// Exception! 0x0B\n"); break; // Segment not present
+        case 0x0C: printf("\n/// Exception! 0x0C\n"); break; // Stack segment fault
+        case 0x0D: printf("\n/// Exception! 0x0D\n"); break; // General protection fault
+        case 0x0E: printf("\n/// Exception! 0x0E\n"); break; // Page fault
+        case 0x0F: printf("\n/// Exception! 0x0F\n"); break; // Reserved
+        case 0x10: printf("\n/// Exception! 0x10\n"); break; // x87 floating point exception
+        case 0x11: printf("\n/// Exception! 0x11\n"); break; // Alignment check
+        case 0x12: printf("\n/// Exception! 0x12\n"); break; // Machine check
+        case 0x13: printf("\n/// Exception! 0x13\n"); break; // SIMD floating point exception
+
+        default: break; // This should never run; a mistake has been made.
+    }
+    for(;;); // Infinite halt
+}
+
 uint32_t InterruptManager::doHandleInterrupt(uint8_t interruptNumber, uint32_t esp) {
     if(handlers[interruptNumber] != 0) {
         esp = handlers[interruptNumber]->HandleInterrupt(esp);
     }
-    else if(interruptNumber != 0x20) { // Check that this isn't the timer
+    else if(interruptNumber > 0x13 && interruptNumber != hardwareoffset) { // Check that this isn't the timer
         char msg[] = "/// UNHANDLED INTERRUPT 0x00";
         char hex[] = "0123456789ABCDEF";
         msg[26] = hex[(interruptNumber >> 4) & 0x0F];
@@ -129,11 +178,16 @@ uint32_t InterruptManager::doHandleInterrupt(uint8_t interruptNumber, uint32_t e
         printf(msg);
     }
 
-    if(interruptNumber == 0x20) {
+    if(interruptNumber == hardwareoffset) {
         esp = (uint32_t)taskManager->Schedule((CPUState*)esp);
     }
 
-    if(0x20 <= interruptNumber && interruptNumber < 0x30) { // Check if hardware interrupt, in which case we must send answer
+    if(interruptNumber >= 0x00 && interruptNumber <= 0x13) { // Exception
+        kpanic(interruptNumber, esp);
+    }
+
+    // Hardware interrupts much be acknowledged
+    if(0x20 <= interruptNumber && interruptNumber < 0x30) {
         picMasterCommand.Write(0x20); // The response that the PIC wants
         if(0x28 <= interruptNumber) { // Check if the interrupt came from the slave
             picSlaveCommand.Write(0x20);

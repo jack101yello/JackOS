@@ -106,7 +106,7 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     TaskManager taskManager;
 
     printf("Setting up Interrupt Descriptor table (IDT).\n");
-    InterruptManager interrupts(&gdt, &taskManager);
+    InterruptManager interrupts(0x20, &gdt, &taskManager);
 
     #ifdef GRAPHICS_MODE
     printf("Instantiating Desktop.\n");
