@@ -20,6 +20,7 @@ namespace jackos {
                 jackos::hardware::Port8Bit attributeControllerReadPort;
                 jackos::hardware::Port8Bit attributeControllerWritePort;
                 jackos::hardware::Port8Bit attributeControllerResetPort;
+                jackos::common::uint32_t framebuffer[320][200];
 
                 void WriteRegisters(jackos::common::uint8_t* registers);
                 jackos::common::uint8_t* GetFrameBufferSegment();
@@ -34,6 +35,7 @@ namespace jackos {
                 virtual void PutPixel(jackos::common::int32_t x, jackos::common::int32_t y, jackos::common::uint8_t r, jackos::common::uint8_t g, jackos::common::uint8_t b);
                 virtual void PutPixel(jackos::common::int32_t x, jackos::common::int32_t y, jackos::common::uint8_t colorcode);
                 virtual void FillRectangle(jackos::common::uint32_t x, jackos::common::uint32_t y, jackos::common::uint32_t w, jackos::common::uint32_t h, jackos::common::uint8_t r, jackos::common::uint8_t g, jackos::common::uint8_t b);
+                virtual void DrawFrame(jackos::common::uint32_t width, jackos::common::uint32_t height);
         };
     }
 }
