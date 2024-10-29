@@ -1,5 +1,6 @@
 #include <common/types.h>
 #include <gdt.h>
+#include <memorymanagement.h>
 #include <hardware/interrupts.h>
 #include <drivers/driver.h>
 #include <drivers/keyboard.h>
@@ -97,13 +98,27 @@ extern "C" void callConstructors() {
     }
 }
 
-#define GRAPHICS_MODE
-
 extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     printf("Initializing JackOS Kernel\n");
 
     printf("Setting up Global Descriptor Table (GDT).\n");
     GlobalDescriptorTable gdt;
+
+    uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
+    size_t heap = 10*1024*1024;
+    MemoryManager memoryManager(heap, (*memupper)*1024 - heap - 10*1024);
+    printf("Heap: 0x");
+    printfhex((heap >> 24) & 0xFF);
+    printfhex((heap >> 16) & 0xFF);
+    printfhex((heap >>  8) & 0xFF);
+    printfhex((heap      ) & 0xFF);
+    void* allocated = memoryManager.malloc(1024);
+    printf("\nAllocated: 0x");
+    printfhex(((size_t)allocated >> 24) & 0xFF);
+    printfhex(((size_t)allocated >> 16) & 0xFF);
+    printfhex(((size_t)allocated >>  8) & 0xFF);
+    printfhex(((size_t)allocated      ) & 0xFF);
+    printf("\n");
 
     TaskManager taskManager;
 

@@ -5,6 +5,7 @@
 #include <common/types.h>
 #include <gdt.h>
 #include <multitasking.h>
+#include <memorymanagement.h>
 
 namespace jackos {
     namespace hardware {

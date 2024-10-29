@@ -114,10 +114,12 @@ BaseAddressRegister PCIController::GetBaseAddressRegister(uint16_t bus, uint16_t
 }
 
 Driver* PCIController::GetDriver(PCIDeviceDescriptor dev_desc, InterruptManager* interruptManager) {
+    Driver* driver;
     switch(dev_desc.vendor_id) {
         case 0x1022: // AMD
             switch(dev_desc.device_id) {
                 case 0x2000: // am79c973
+                    printf("AMD 79c973");
                     break;
             }
             break;
@@ -132,7 +134,7 @@ Driver* PCIController::GetDriver(PCIDeviceDescriptor dev_desc, InterruptManager*
             }
             break;
     }
-    return 0; // Change later
+    return driver; // Change later
 }
 
 PCIDeviceDescriptor PCIController::GetDeviceDescriptor(uint16_t bus, uint16_t device, uint16_t function) {

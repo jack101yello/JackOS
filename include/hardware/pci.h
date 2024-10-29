@@ -5,6 +5,7 @@
 #include <common/types.h>
 #include <hardware/interrupts.h>
 #include <drivers/driver.h>
+#include <memorymanagement.h>
 
 namespace jackos {
     namespace hardware {
