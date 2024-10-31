@@ -65,6 +65,8 @@ namespace jackos {
                 void Activate();
                 void Deactivate();
 
+                jackos::common::uint8_t getHardwareOffset() { return hardwareoffset; }
+
                 static jackos::common::uint32_t handleInterrupt(jackos::common::uint8_t interruptNumber, jackos::common::uint32_t esp);
                 jackos::common::uint32_t doHandleInterrupt(jackos::common::uint8_t interruptNumber, jackos::common::uint32_t esp);
 
@@ -85,6 +87,9 @@ namespace jackos {
                 static void HandleInterruptRequest0x0D();
                 static void HandleInterruptRequest0x0E();
                 static void HandleInterruptRequest0x0F();
+                static void HandleInterruptRequest0x31();
+
+                static void HandleInterruptRequest0x80();
 
                 static void HandleException0x00();
                 static void HandleException0x01();

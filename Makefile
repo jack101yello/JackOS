@@ -9,6 +9,7 @@ objects = obj/loader.o \
 		  obj/hardware/port.o \
 		  obj/hardware/interruptstubs.o \
 		  obj/hardware/interrupts.o \
+		  obj/syscalls.o \
 		  obj/multitasking.o \
 		  obj/hardware/pci.o \
 		  obj/drivers/keyboard.o \
