@@ -114,7 +114,7 @@ BaseAddressRegister PCIController::GetBaseAddressRegister(uint16_t bus, uint16_t
 }
 
 Driver* PCIController::GetDriver(PCIDeviceDescriptor dev_desc, InterruptManager* interruptManager) {
-    Driver* driver;
+    Driver* driver = 0;
     switch(dev_desc.vendor_id) {
         case 0x1022: // AMD
             switch(dev_desc.device_id) {

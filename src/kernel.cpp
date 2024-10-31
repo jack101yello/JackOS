@@ -98,6 +98,8 @@ extern "C" void callConstructors() {
     }
 }
 
+// #define GRAPHICS_MODE
+
 extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     printf("Initializing JackOS Kernel\n");
 
