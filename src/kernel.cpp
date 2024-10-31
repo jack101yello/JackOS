@@ -7,6 +7,7 @@
 #include <drivers/mouse.h>
 #include <hardware/pci.h>
 #include <drivers/vga.h>
+#include <drivers/ata.h>
 #include <gui/desktop.h>
 #include <gui/window.h>
 #include <multitasking.h>
@@ -175,6 +176,26 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     Window win2(&desktop, 40, 15, 30, 30, 0x00, 0xA8, 0x00);
     desktop.AddChild(&win2);
     #endif
+
+    // Interrupt 14
+    AdvancedTechnologyAttachment ata0m(0x1F0, true);
+    printf("ATA Primary master: ");
+    ata0m.Identify();
+    AdvancedTechnologyAttachment ata0s(0x1F0, false);
+    printf("ATA Primary slave: ");
+    ata0s.Identify();
+
+    char atabuffer[] = "JACKOS";
+    ata0s.Write28(0, (uint8_t*)atabuffer, 7);
+    ata0s.Flush();
+
+    ata0s.Read28(0, (uint8_t*)atabuffer, 7);
+
+    // Interrupt 15
+    AdvancedTechnologyAttachment ata1m(0x170, true);
+    AdvancedTechnologyAttachment ata1s(0x170, false);
+    // third, 0x1E8
+    // fourth, 0x168
 
     printf("Enabling Interrupts.\n");
     interrupts.Activate();
