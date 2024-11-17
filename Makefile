@@ -20,6 +20,7 @@ objects = obj/loader.o \
 		  obj/gui/window.o \
 		  obj/gui/desktop.o \
 		  obj/programs/terminal.o \
+		  obj/std/string.o \
 		  obj/kernel.o
 
 obj/%.o: src/%.cpp

@@ -2,7 +2,9 @@
 #define __jackos_programs_terminal_H
 
 #include <drivers/keyboard.h>
+#include <std/string.h>
 
+extern void printf(jackos::std::string str);
 extern void printf(const char* msg);
 extern void printfhex(int hex);
 
@@ -11,11 +13,12 @@ namespace jackos {
         class Terminal {
             private:
                 char* buffer;
-                jackos::common::uint8_t buffer_size;
+                jackos::common::uint8_t buffer_length;
                 jackos::common::uint8_t word_count;
-                jackos::common::uint8_t putntharg(int arg, char* dest);
                 void initialize_buffer();
                 void destroy_buffer();
+                int command_index();
+                bool check_command(char* command, int len);
                 void run_command();
             public:
                 Terminal();

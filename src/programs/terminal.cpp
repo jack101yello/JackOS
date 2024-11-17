@@ -1,5 +1,5 @@
 #include <programs/terminal.h>
-#include <std/std.h>
+#include <std/string.h>
 
 using namespace jackos;
 using namespace jackos::common;
@@ -15,8 +15,9 @@ Terminal::~Terminal() {
 
 void Terminal::initialize_buffer() {
     word_count = 1;
-    buffer = new char;
-    buffer_size = 0;
+    buffer = new char[1];
+    buffer[0] = '\0';
+    buffer_length = 0;
     printf("> ");
 }
 
@@ -34,65 +35,53 @@ void Terminal::appendBuffer(char c) {
         case ' ':
             word_count++; // Intentionally no break
         default:
-            char* temp = new char[buffer_size + 1];
-            for(int i = 0; i < buffer_size; i++) {
-                temp[i] = buffer[i];
+            char* new_buffer = new char[buffer_length + 2];
+            for(int i = 0; i < buffer_length; i++) {
+                new_buffer[i] = buffer[i];
             }
             delete[] buffer;
-            buffer[buffer_size] = c;
-            buffer_size++;
+            buffer = new_buffer;
+            buffer[buffer_length] = c;
+            buffer[buffer_length + 1] = '\0';
+            buffer_length++;
             break;
     }
 }
 
-uint8_t Terminal::putntharg(int arg, char* dest) {
-    // Ensure enough arguments
-    if(word_count < arg) {
-        return -1;
-    }
+bool Terminal::check_command(char* command, int len) {
     int count = 0;
-    for(int i = 0; i < buffer_size; i++) {
-        if(count == arg) {
-            int size = 0;
-            for(int j = i; j < buffer_size; j++) {
-                if(buffer[j] == ' ') {
-                    break;
-                }
-                size++;
-            }
-            delete[] dest;
-            dest = new char[size];
-            for(int j = 0; j < size; j++) {
-                char* foo = " ";
-                dest[j] = buffer[i + j];
-            }
-            return size;
-        }
+    for(int i = 0; i < buffer_length; i++) {
         if(buffer[i] == ' ') {
-            count++;
+            break;
+        }
+        count++;
+    }
+    if(count != len) {
+        return false;
+    }
+    for(int i = 0; i < count; i++) {
+        if(buffer[i] != command[i]) {
+            return false;
         }
     }
-    return -2;
+    return true;
+}
+
+int Terminal::command_index() {
+    if(check_command("help", 4)) return 0;
+    else return -1;
 }
 
 void Terminal::run_command() {
-    char* command = new char[0];
-    uint8_t size = putntharg(0, command);
-    
-    /*
-    In future, once the filesystem is up and running, this should be modified
-    to run a particular executable file, as per how Unix operates.
-    */
-    if(jackos::std::streq(command, "help", size, 4)) {
-        printf("You have run the help command.\n");
+    switch(command_index()) {
+        case 0: // Help
+            printf("HELP Window:\n");
+            break;
+        default: // Command not found
+            printf("Command not found.\n");
+            break;
     }
-    else {
-        printf("Command not found.\n");
-    }
-
-    delete[] command;
 }
-
 
 void TerminalKeyboardEventHandler::OnKeyDown(char c) {
     char foo[] = " ";

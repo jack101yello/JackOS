@@ -13,6 +13,7 @@
 #include <gui/window.h>
 #include <multitasking.h>
 #include <programs/terminal.h>
+#include <std/string.h>
 
 using namespace jackos;
 using namespace jackos::common;
@@ -54,6 +55,10 @@ void printf(const char* str) {
             y = 0;
         }
     }
+}
+
+void printf(jackos::std::string str) {
+    printf(str.getStr());
 }
 
 void printfhex(int val) {
@@ -174,7 +179,6 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     #ifdef GRAPHICS_MODE
     KeyboardDriver keyboard(&interrupts, &desktop);
     #else
-    // PrintKeyboardEventHandler kbhandler;
     Terminal terminal;
     TerminalKeyboardEventHandler termkbhandler(&terminal);
     KeyboardDriver keyboard(&interrupts, &termkbhandler);
