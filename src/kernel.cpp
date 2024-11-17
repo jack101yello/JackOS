@@ -95,18 +95,6 @@ void sysprintf(const char* str) {
     asm("int $0x80" : : "a" (4), "b" (str));
 }
 
-void taskA() {
-    while(true) {
-        sysprintf("A");
-    }
-}
-
-void taskB() {
-    while(true) {
-        sysprintf("B");
-    }
-}
-
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
@@ -143,11 +131,7 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     printf("\n");
 
     TaskManager taskManager;
-    Task task1(&gdt, taskA);
-    Task task2(&gdt, taskB);
-    taskManager.AddTask(&task1);
-    taskManager.AddTask(&task2);
-
+    
     printf("Setting up Interrupt Descriptor table (IDT).\n");
     InterruptManager interrupts(0x20, &gdt, &taskManager);
     SyscallHandler syscalls(&interrupts, 0x80);
