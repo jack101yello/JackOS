@@ -12,12 +12,14 @@
 #include <gui/desktop.h>
 #include <gui/window.h>
 #include <multitasking.h>
+#include <programs/terminal.h>
 
 using namespace jackos;
 using namespace jackos::common;
 using namespace jackos::drivers;
 using namespace jackos::hardware;
 using namespace jackos::gui;
+using namespace jackos::programs;
 
 void printf(const char* str) {
     static uint16_t* VideoMemory = (uint16_t*)0xb8000;
@@ -30,6 +32,8 @@ void printf(const char* str) {
                 y++;
                 x = 0;
                 break;
+            case '\0':
+                return;
             default:
                 VideoMemory[80*y + x] = (VideoMemory[80*y + x] & 0xFF00) | str[i];
                 x++;
@@ -59,15 +63,6 @@ void printfhex(int val) {
     msg[1] = hex[val & 0x0F];
     printf(msg);
 }
-
-class PrintKeyboardEventHandler : public KeyboardEventHandler {
-    public:
-        void OnKeyDown(char c) {
-            char foo[] = " ";
-            foo[0] = c;
-            printf(foo);
-        }
-};
 
 class MouseToConsole : public MouseEventHandler {
     int8_t x, y;
@@ -154,15 +149,6 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     #endif
     drvManager.AddDriver(&mouse);
 
-    printf("\tInitiating keyboard.\n");
-    // PrintKeyboardEventHandler kbhandler;
-    #ifdef GRAPHICS_MODE
-    KeyboardDriver keyboard(&interrupts, &desktop);
-    #else
-    PrintKeyboardEventHandler kbhandler;
-    KeyboardDriver keyboard(&interrupts, &kbhandler);
-    #endif
-    drvManager.AddDriver(&keyboard);
 
     printf("Initializing Peripheral Component Interconnect (PCI).\n");
     PCIController pcicontroller;
@@ -184,28 +170,17 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     Window win2(&desktop, 40, 15, 30, 30, 0x00, 0xA8, 0x00);
     desktop.AddChild(&win2);
     #endif
+    
+    #ifdef GRAPHICS_MODE
+    KeyboardDriver keyboard(&interrupts, &desktop);
+    #else
+    // PrintKeyboardEventHandler kbhandler;
+    Terminal terminal;
+    TerminalKeyboardEventHandler termkbhandler(&terminal);
+    KeyboardDriver keyboard(&interrupts, &termkbhandler);
+    #endif
+    drvManager.AddDriver(&keyboard);
 
-    // Interrupt 14
-    AdvancedTechnologyAttachment ata0m(0x1F0, true);
-    printf("ATA Primary master: ");
-    ata0m.Identify();
-    AdvancedTechnologyAttachment ata0s(0x1F0, false);
-    printf("ATA Primary slave: ");
-    ata0s.Identify();
-
-    char atabuffer[] = "JACKOS";
-    ata0s.Write28(0, (uint8_t*)atabuffer, 7);
-    ata0s.Flush();
-
-    ata0s.Read28(0, (uint8_t*)atabuffer, 7);
-
-    // Interrupt 15
-    AdvancedTechnologyAttachment ata1m(0x170, true);
-    AdvancedTechnologyAttachment ata1s(0x170, false);
-    // third, 0x1E8
-    // fourth, 0x168
-
-    printf("Enabling Interrupts.\n");
     interrupts.Activate();
 
     for(;;) { // Infinite loop
