@@ -72,6 +72,13 @@ namespace jackos {
             output[char_array_size(a) + char_array_size(b)] = '\0';
             return output;
         }
+
+        void strcpy(char* dest, const char* src)  {
+            do {
+                *dest++ = *src++;
+            }
+            while(*src != '\0');
+        }
     }
 }
 
