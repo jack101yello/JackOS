@@ -14,6 +14,7 @@
 #include <multitasking.h>
 #include <programs/terminal.h>
 #include <std/string.h>
+#include <std/c_string.h>
 
 using namespace jackos;
 using namespace jackos::common;
@@ -21,6 +22,7 @@ using namespace jackos::drivers;
 using namespace jackos::hardware;
 using namespace jackos::gui;
 using namespace jackos::programs;
+using namespace jackos::std;
 
 void printf(const char* str) {
     static uint16_t* VideoMemory = (uint16_t*)0xb8000;
@@ -179,13 +181,33 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     #ifdef GRAPHICS_MODE
     KeyboardDriver keyboard(&interrupts, &desktop);
     #else
+    #ifdef TERMINAL_MODE
     Terminal terminal;
     TerminalKeyboardEventHandler termkbhandler(&terminal);
     KeyboardDriver keyboard(&interrupts, &termkbhandler);
+    #else
+    KeyboardEventHandler kbhandler;
+    KeyboardDriver keyboard(&interrupts, &kbhandler);
+    #endif
     #endif
     drvManager.AddDriver(&keyboard);
 
     interrupts.Activate();
+
+    printf("Attempting to read disk:\n");
+    AdvancedTechnologyAttachment ata0m(0x1F0, true);
+    printf("ATA Primary Master: ");
+    ata0m.Identify();
+    AdvancedTechnologyAttachment ata0s(0x1F0, false);
+    printf("ATA Primary Slave: ");
+    ata0s.Identify();
+
+    char* atabuffer = "TEMP";
+    ata0s.Write28(0, (uint8_t *)atabuffer, 5);
+    ata0s.Flush();
+    char* buf = "XXXX";
+    ata0s.Read28(0, (uint8_t *)buf, 5);
+    printf(buf);
 
     for(;;) { // Infinite loop
         #ifdef GRAPHICS_MODE
