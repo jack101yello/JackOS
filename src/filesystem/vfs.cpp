@@ -34,16 +34,30 @@ void* VFS::close_fs(fs_node* node) {
     return 0;
 }
 
-dirent* VFS::readdir_fs(fs_node* node, jackos::common::uint32_t index) {
-    if((node -> flags & 0x7) == FS_DIRECTORY && node -> readdir != 0) {
-        return node -> readdir(node, index);
+fs_node VFS::volOpenFile(const char* filename) {
+    if(filename) {
+        char device = 'a'; // Default to a: drive
+        char* fname = (char*)filename;
+        if(filename[1] == ':') {
+            device = filename[0];
+            fname += 2; // Strip out the a:
+        }
+        if(file_systems[device - 'a']) {
+            fs_node file = file_systems[device - 'a'] -> Open(fname);
+            file.device = device;
+            return file;
+        }
     }
-    return 0;
+    fs_node file;
+    file.flags = FS_INVALID;
+    return file;
 }
 
-fs_node* VFS::finddir_fs(fs_node* node, char* name) {
-    if((node -> flags & 0x7) == FS_DIRECTORY && node -> finddir != 0) {
-        return node -> finddir(node, name);
+void VFS::volRegisterFileSystem(file_system* fs, jackos::common::uint32_t deviceID) {
+    if(deviceID < 0 || deviceID > DEVICE_MAX) {
+        return;
     }
-    return 0;
+    if(fs) {
+        file_systems[deviceID] = fs;
+    }
 }
