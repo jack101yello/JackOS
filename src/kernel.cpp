@@ -8,7 +8,6 @@
 #include <drivers/mouse.h>
 #include <hardware/pci.h>
 #include <drivers/vga.h>
-#include <drivers/ata.h>
 #include <gui/desktop.h>
 #include <gui/window.h>
 #include <multitasking.h>
@@ -193,21 +192,6 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     drvManager.AddDriver(&keyboard);
 
     interrupts.Activate();
-
-    printf("Attempting to read disk:\n");
-    AdvancedTechnologyAttachment ata0m(0x1F0, true);
-    printf("ATA Primary Master: ");
-    ata0m.Identify();
-    AdvancedTechnologyAttachment ata0s(0x1F0, false);
-    printf("ATA Primary Slave: ");
-    ata0s.Identify();
-
-    char* atabuffer = "TEMP";
-    ata0s.Write28(0, (uint8_t *)atabuffer, 5);
-    ata0s.Flush();
-    char* buf = "XXXX";
-    ata0s.Read28(0, (uint8_t *)buf, 5);
-    printf(buf);
 
     for(;;) { // Infinite loop
         #ifdef GRAPHICS_MODE
