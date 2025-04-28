@@ -3,55 +3,54 @@
 
 #include <common/types.h>
 
-#define FS_FILE         0x00
-#define FS_DIRECTORY    0x01
-#define FS_INVALID      0x02
-
-#define DEVICE_MAX 26 // We use letter assignments, like in Windows
+#define FS_FILE 0x01
+#define FS_DIRECTORY 0X02
+#define FS_CHARDEVICE 0X03
+#define FS_BLOCKDEVICE 0X04
+#define FS_PIPE 0X05
+#define FS_SYMLINK 0X06
+#define FS_MOUNTPOINT 0X08
 
 namespace jackos {
     namespace filesystem {
-        struct fs_node { // Files and directories
+
+        typedef jackos::common::uint32_t (*read_type_t)(struct fs_node*, jackos::common::uint32_t, jackos::common::uint32_t, jackos::common::uint8_t*);
+        typedef jackos::common::uint32_t (*write_type_t)(struct fs_node*, jackos::common::uint32_t, jackos::common::uint32_t, jackos::common::uint8_t*);
+        typedef void (*open_type_t)(struct fs_node*);
+        typedef void (*close_type_t)(struct fs_node*);
+        typedef struct dirent * (*readdir_type_t)(struct fs_node*, jackos::common::uint32_t);
+        typedef struct fs_node * (*finddir_type_t)(struct fs_node*, char* name);
+
+        struct dirent {
+            char name[128]; // filename
+            jackos::common::uint32_t ino; // Inode number, as required by POSIX
+        };
+
+        typedef struct fs_node {
             char name[128];
-            jackos::common::uint32_t flags; // Including filetype
-            jackos::common::uint32_t length; // Filesize, in bytes
-            jackos::common::uint32_t id;
-            jackos::common::uint32_t eof;
-            jackos::common::uint32_t position;
-            jackos::common::uint32_t currentCluster;
-            jackos::common::uint32_t device;
-            // These functions are implemented by the various filesystems.
-            void* (*open)(fs_node* node, jackos::common::uint8_t read, jackos::common::uint8_t write);
-            void* (*close)(fs_node* node);
-            jackos::common::uint32_t (*read)(fs_node* node, jackos::common::uint32_t offset, jackos::common::uint32_t size, jackos::common::uint8_t* buffer);
-            jackos::common::uint32_t (*write)(fs_node* node, jackos::common::uint32_t offset, jackos::common::uint32_t size, jackos::common::uint8_t* buffer);
-        };
+            jackos::common::uint32_t mask; // The permissions mask
+            jackos::common::uint32_t uid; // The owning user
+            jackos::common::uint32_t gid; // The owning group
+            jackos::common::uint32_t flags;
+            jackos::common::uint32_t inode;
+            jackos::common::uint32_t length; // The size of the file (bytes)
+            jackos::common::uint32_t impl;
+            read_type_t read;
+            write_type_t write;
+            open_type_t open;
+            close_type_t close;
+            readdir_type_t readdir;
+            finddir_type_t finddir;
+            struct fs_node* ptr; // Used by mountpoints and symbolic links/shortcuts
+        } fs_node_t;
 
-        struct file_system {
-            char name[8];
-            fs_node (*Directory) (const char* DirectoryName);
-            void (*Mount) ();
-            void (*Read) (fs_node* file, jackos::common::uint8_t* buffer, jackos::common::uint32_t len);
-            void (*Close) (fs_node* file);
-            fs_node (*Open) (const char* filename);
-        };
-
-        class VFS {
-            private:
-                file_system *file_systems[DEVICE_MAX];
-
-            public:
-                jackos::common::uint32_t read_fs(fs_node* node, jackos::common::uint32_t offset, jackos::common::uint32_t size, jackos::common::uint8_t* buffer);
-                jackos::common::uint32_t write_fs(fs_node* node, jackos::common::uint32_t offset, jackos::common::uint32_t size, jackos::common::uint8_t* buffer);
-                void* open_fs(fs_node* node, jackos::common::uint8_t read, jackos::common::uint8_t write);  
-                void* close_fs(fs_node* node);
-                fs_node volOpenFile(const char* filename);
-                void volReadFile(fs_node* file, jackos::common::uint8_t* buffer, jackos::common::uint32_t length);
-                void volCloseFile(fs_node* file);
-                void volRegisterFileSystem(file_system* fs, jackos::common::uint32_t deviceID);
-                void volUnregisterFileSystem(file_system* fs);
-                void volUnregisterFileSystem(jackos::common::uint32_t deviceID);
-        };
+        extern fs_node_t *fs_root; // The filesystem root
+        jackos::common::uint32_t read_fs(fs_node_t* node, jackos::common::uint32_t offset, jackos::common::uint32_t size, jackos::common::uint8_t* buffer);
+        jackos::common::uint32_t write_fs(fs_node_t* node, jackos::common::uint32_t offset, jackos::common::uint32_t size, jackos::common::uint8_t* buffer);
+        void open_fs(fs_node_t* node, jackos::common::uint8_t read, jackos::common::uint8_t write);
+        void close_fs(fs_node_t* node);
+        struct dirent *readdir_fs(fs_node_t* node, jackos::common::uint32_t index);
+        fs_node_t* finddir_fs(fs_node_t* node, char *name);
     }
 }
 

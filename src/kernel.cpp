@@ -11,17 +11,17 @@
 #include <gui/desktop.h>
 #include <gui/window.h>
 #include <multitasking.h>
-#include <programs/terminal.h>
-#include <std/string.h>
-#include <std/c_string.h>
+#include <multiboot.h>
+#include <filesystem/vfs.h>
+#include <filesystem/initrd.h>
+#include <libc/libc.h>
 
 using namespace jackos;
 using namespace jackos::common;
 using namespace jackos::drivers;
 using namespace jackos::hardware;
 using namespace jackos::gui;
-using namespace jackos::programs;
-using namespace jackos::std;
+using namespace jackos::filesystem;
 
 void printf(const char* str) {
     static uint16_t* VideoMemory = (uint16_t*)0xb8000;
@@ -58,8 +58,13 @@ void printf(const char* str) {
     }
 }
 
-void printf(jackos::std::string str) {
-    printf(str.getStr());
+void clear_screen() {
+    for(int i = 0; i < 25; i++) {
+        for(int j = 0; j < 80; j++) {
+            printf(" ");
+        }
+        printf("\n");
+    }
 }
 
 void printfhex(int val) {
@@ -92,6 +97,8 @@ class MouseToConsole : public MouseEventHandler {
         }
 };
 
+MemoryManager* kmm;
+
 void sysprintf(const char* str) {
     asm("int $0x80" : : "a" (4), "b" (str));
 }
@@ -109,7 +116,9 @@ extern "C" void* heap;
 
 // #define GRAPHICS_MODE
 
-extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
+extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magicnumber) {
+    clear_screen();
+
     printf("Initializing JackOS Kernel\n");
 
     printf("Setting up Global Descriptor Table (GDT).\n");
@@ -118,6 +127,7 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
     size_t heap = 10*1024*1024;
     MemoryManager memoryManager(heap, (*memupper)*1024 - heap - 10*1024);
+    kmm = &memoryManager; // Set the global memory manager to this memory manager, so that everyone can call kmalloc
     printf("Heap: 0x");
     printfhex((heap >> 24) & 0xFF);
     printfhex((heap >> 16) & 0xFF);
@@ -165,6 +175,7 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     VideoGraphicsArray vga;
     #endif
 
+
     printf("Activating drivers.\n");
     drvManager.ActivateAll();
 
@@ -180,18 +191,42 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     #ifdef GRAPHICS_MODE
     KeyboardDriver keyboard(&interrupts, &desktop);
     #else
-    #ifdef TERMINAL_MODE
-    Terminal terminal;
-    TerminalKeyboardEventHandler termkbhandler(&terminal);
-    KeyboardDriver keyboard(&interrupts, &termkbhandler);
-    #else
     KeyboardEventHandler kbhandler;
     KeyboardDriver keyboard(&interrupts, &kbhandler);
-    #endif
     #endif
     drvManager.AddDriver(&keyboard);
 
     interrupts.Activate();
+
+    printf("Setting Up Ramdisk.\n");
+    uint32_t initrd_location = *((uint32_t*)multiboot_structure->mods_addr);
+    uint32_t initrd_end = *(uint32_t*)(multiboot_structure->mods_addr+4);
+    /* There is a risk ofthis being overwritten, in which case we should think about
+    moving the heap to ensure that it doesn't intersect this. */
+    fs_root = initialize_initrd(initrd_location);
+
+    int i = 0;
+    struct dirent* node = 0;
+    while((node = readdir_fs(fs_root, i)) != 0) {
+        printf("Found file ");
+        printf(node -> name);
+        fs_node_t* fsnode = finddir_fs(fs_root, node -> name);
+        if((fsnode -> flags % 0x7) == FS_DIRECTORY) {
+            printf("\n\t(directory)\n");
+        }
+        else {
+            printf("\n\t contents: \"");
+            uint8_t buf[256];
+            uint32_t sz = read_fs(fsnode, 0, 256, buf);
+            for(int j = 0; j < sz; j++) {
+                char foo[2] = {'x', '\0'};
+                foo[0] = buf[j];
+                printf(foo);
+            }
+            printf("\"\n");
+        }
+        ++i;
+    }
 
     for(;;) { // Infinite loop
         #ifdef GRAPHICS_MODE

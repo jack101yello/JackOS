@@ -1,6 +1,6 @@
-GPPPARAMS = -m32 -Iinclude -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -fcheck-new
+GPPPARAMS = -g -m32 -Iinclude -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -fcheck-new
 ASPARAMS = -32
-LDPARAMS = -melf_i386
+LDPARAMS = -melf_i386 -z noexecstack
 
 objects = obj/loader.o \
 		  obj/gdt.o \
@@ -18,8 +18,9 @@ objects = obj/loader.o \
 		  obj/gui/widget.o \
 		  obj/gui/window.o \
 		  obj/gui/desktop.o \
-		  obj/programs/terminal.o \
-		  obj/std/string.o \
+		  obj/filesystem/vfs.o \
+		  obj/filesystem/initrd.o \
+		  obj/libc/libc.o \
 		  obj/kernel.o
 
 obj/%.o: src/%.cpp
@@ -38,13 +39,15 @@ jackos.iso: jackoskernel.bin
 	cp $< isodir/boot/jackoskernel.bin
 	echo 'menuentry "JackOS" {' > isodir/boot/grub/grub.cfg
 	echo '	multiboot /boot/jackoskernel.bin' >> isodir/boot/grub/grub.cfg
+	echo '	module initrd.img' >> isodir/boot/grub/grub.cfg
 	echo '}' >> isodir/boot/grub/grub.cfg
 	grub-mkrescue -o jackos.iso isodir
 
 install: jackos.iso
 
 run: jackos.iso
-	qemu-system-i386 -cdrom jackos.iso
+	qemu-system-i386 -kernel jackoskernel.bin
+	# qemu-system-i386 -cdrom jackos.iso
 
 .PHONY: clean
 clean: 
