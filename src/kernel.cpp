@@ -199,6 +199,8 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     interrupts.Activate();
 
     printf("Setting Up Ramdisk.\n");
+    printfhex(multiboot_structure->mods_count); // The number of modules loaded by GRUB
+    printf("\n");
     uint32_t initrd_location = *((uint32_t*)multiboot_structure->mods_addr);
     uint32_t initrd_end = *(uint32_t*)(multiboot_structure->mods_addr+4);
     /* There is a risk ofthis being overwritten, in which case we should think about
