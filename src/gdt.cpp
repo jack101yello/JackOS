@@ -14,6 +14,7 @@ dataSegmentSelector(0, 64*1024*1024, 0x92)
     i[0] = sizeof(GlobalDescriptorTable) << 16;
 
     asm volatile("lgdt (%0)": :"p" (((uint8_t *) i) + 2));
+    // asm volatile("jmp 0x08"); // Long jump after loading GDT
 }
 
 GlobalDescriptorTable::~GlobalDescriptorTable() {

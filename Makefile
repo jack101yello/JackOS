@@ -1,6 +1,6 @@
-GPPPARAMS = -m32 -Iinclude -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -fcheck-new
+GPPPARAMS = -g -Iinclude -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -fcheck-new
 ASPARAMS = -32
-LDPARAMS = -melf_i386
+LDPARAMS = -melf_i386 -z noexecstack
 
 objects = obj/loader.o \
 		  obj/gdt.o \
@@ -18,26 +18,37 @@ objects = obj/loader.o \
 		  obj/gui/widget.o \
 		  obj/gui/window.o \
 		  obj/gui/desktop.o \
-		  obj/programs/terminal.o \
-		  obj/std/string.o \
+		  obj/filesystem/vfs.o \
+		  obj/filesystem/initrd.o \
+		  obj/libc/libc.o \
 		  obj/kernel.o
 
 obj/%.o: src/%.cpp
 	mkdir -p $(@D)
-	g++ $(GPPPARAMS) -o $@ -c $<
+	/home/jack/opt/cross/bin/i386-elf-g++ $(GPPPARAMS) -o $@ -c $<
 
 obj/%.o: src/%.s
 	mkdir -p $(@D)
-	as $(ASPARAMS) -o $@ $<
+	/home/jack/opt/cross/bin/i386-elf-as $(ASPARAMS) -o $@ $<
 
 jackoskernel.bin: linker.ld $(objects)
 	ld $(LDPARAMS) -T $< -o $@ $(objects)
 
-jackos.iso: jackoskernel.bin
+initrd.elf:
+	gcc Initrd/makeinitrd.c -o makeinitrd.out
+	cp Initrd/ProgramFiles/testfile.txt testfile.txt
+	cp Initrd/ProgramFiles/testfile2.txt testfile2.txt
+	./makeinitrd.out testfile.txt testfile.txt testfile2.txt testfile2.txt
+	rm testfile.txt
+	rm testfile2.txt
+
+jackos.iso: jackoskernel.bin initrd.elf
 	mkdir -p isodir/boot/grub
 	cp $< isodir/boot/jackoskernel.bin
+	cp initrd.elf isodir/boot/initrd.elf
 	echo 'menuentry "JackOS" {' > isodir/boot/grub/grub.cfg
 	echo '	multiboot /boot/jackoskernel.bin' >> isodir/boot/grub/grub.cfg
+	echo '	module /boot/initrd.elf' >> isodir/boot/grub/grub.cfg
 	echo '}' >> isodir/boot/grub/grub.cfg
 	grub-mkrescue -o jackos.iso isodir
 
@@ -49,4 +60,4 @@ run: jackos.iso
 .PHONY: clean
 clean: 
 	rm -rfv isodir obj
-	rm -v *.bin *.iso
+	rm -v *.bin *.iso *.elf *.out
