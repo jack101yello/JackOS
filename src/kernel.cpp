@@ -119,31 +119,31 @@ extern "C" void* heap;
 extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magicnumber) {
     clear_screen();
 
-    printf("Initializing JackOS Kernel\n");
+    // printf("Initializing JackOS Kernel\n");
 
-    printf("Setting up Global Descriptor Table (GDT).\n");
+    // printf("Setting up Global Descriptor Table (GDT).\n");
     GlobalDescriptorTable gdt;
 
     uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
     size_t heap = 10*1024*1024;
     MemoryManager memoryManager(heap, (*memupper)*1024 - heap - 10*1024);
     kmm = &memoryManager; // Set the global memory manager to this memory manager, so that everyone can call kmalloc
-    printf("Heap: 0x");
-    printfhex((heap >> 24) & 0xFF);
-    printfhex((heap >> 16) & 0xFF);
-    printfhex((heap >>  8) & 0xFF);
-    printfhex((heap      ) & 0xFF);
+    // printf("Heap: 0x");
+    // printfhex((heap >> 24) & 0xFF);
+    // printfhex((heap >> 16) & 0xFF);
+    // printfhex((heap >>  8) & 0xFF);
+    // printfhex((heap      ) & 0xFF);
     void* allocated = memoryManager.malloc(1024);
-    printf("\nAllocated: 0x");
-    printfhex(((size_t)allocated >> 24) & 0xFF);
-    printfhex(((size_t)allocated >> 16) & 0xFF);
-    printfhex(((size_t)allocated >>  8) & 0xFF);
-    printfhex(((size_t)allocated      ) & 0xFF);
-    printf("\n");
+    // printf("\nAllocated: 0x");
+    // printfhex(((size_t)allocated >> 24) & 0xFF);
+    // printfhex(((size_t)allocated >> 16) & 0xFF);
+    // printfhex(((size_t)allocated >>  8) & 0xFF);
+    // printfhex(((size_t)allocated      ) & 0xFF);
+    // printf("\n");
 
     TaskManager taskManager;
     
-    printf("Setting up Interrupt Descriptor table (IDT).\n");
+    // printf("Setting up Interrupt Descriptor table (IDT).\n");
     InterruptManager interrupts(0x20, &gdt, &taskManager);
     SyscallHandler syscalls(&interrupts, 0x80);
 
@@ -152,10 +152,10 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     Desktop desktop(320, 200, 0x00, 0x00, 0xA8);
     #endif
 
-    printf("Setting up drivers...\n");
+    // printf("Setting up drivers...\n");
     DriverManager drvManager;
 
-    printf("\tInitiating mouse.\n");
+    // printf("\tInitiating mouse.\n");
     // MouseToConsole mhandler;
     #ifdef GRAPHICS_MODE
     MouseDriver mouse(&interrupts, &desktop);
@@ -199,13 +199,13 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     interrupts.Activate();
 
     printf("Setting Up Ramdisk.\n");
-    printfhex(multiboot_structure->mods_count); // The number of modules loaded by GRUB
-    printf("\n");
     uint32_t initrd_location = *((uint32_t*)multiboot_structure->mods_addr);
     uint32_t initrd_end = *(uint32_t*)(multiboot_structure->mods_addr+4);
-    /* There is a risk ofthis being overwritten, in which case we should think about
+    /* There is a risk of this being overwritten, in which case we should think about
     moving the heap to ensure that it doesn't intersect this. */
     fs_root = initialize_initrd(initrd_location);
+
+    printf("Reading initrd:\n");
 
     int i = 0;
     struct dirent* node = 0;

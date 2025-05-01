@@ -37,17 +37,18 @@ jackoskernel.bin: linker.ld $(objects)
 jackos.iso: jackoskernel.bin
 	mkdir -p isodir/boot/grub
 	cp $< isodir/boot/jackoskernel.bin
-	cp initrd.img isodir/boot/initrd.img
+	# cp initrd.img isodir/boot/initrd.img
+	cp elfinitrd.elf isodir/boot/elfinitrd.elf
 	echo 'menuentry "JackOS" {' > isodir/boot/grub/grub.cfg
 	echo '	multiboot /boot/jackoskernel.bin' >> isodir/boot/grub/grub.cfg
-	echo '	insmod /boot/initrd.img' >> isodir/boot/grub/grub.cfg
+	# echo '	insmod /boot/initrd.img' >> isodir/boot/grub/grub.cfg
+	echo '	module /boot/elfinitrd.elf' >> isodir/boot/grub/grub.cfg
 	echo '}' >> isodir/boot/grub/grub.cfg
 	grub-mkrescue -o jackos.iso isodir
 
 install: jackos.iso
 
 run: jackos.iso
-	cp initrd.img isodir/boot/initrd.img
 	qemu-system-i386 -cdrom jackos.iso
 
 .PHONY: clean
