@@ -25,7 +25,7 @@ static uint32_t initrd_read(fs_node_t* node, uint32_t offset, uint32_t size, uin
     if(offset + size > header.length) {
         size = header.length - offset;
     }
-    jackos::common::memcpy(buffer, (uint8_t*)(header.offset+offset), size);
+    jackos::common::memcpy(buffer, (uint8_t*)(header.offset+offset+sizeof(Elf_Ehdr)), size);
     return size;
 }
 
@@ -61,16 +61,11 @@ static fs_node_t* initrd_finddir(fs_node_t* node, char *name) {
 }
 
 fs_node_t *jackos::filesystem::initialize_initrd(uint32_t location) {
-    printf("Initializing initrd\n");
     // Initialize the main and file header pointers and populate the root directory
-    printf("The elf header is of size ");
-    printfhex(sizeof(Elf_Ehdr));
-    printf("\n");
     initrd_header = (initrd_header_t *)(location+sizeof(Elf_Ehdr)); // We need to shift by the size of the elf header
     file_headers = (initrd_file_header_t *) (location + sizeof(initrd_header_t) + sizeof(Elf_Ehdr));
 
     // Initialize the root directory
-    printf("\tInitializing root directory.\n");
     initrd_root = (fs_node_t*)kmalloc(sizeof(fs_node_t));
     char foo[] = {'i', 'n', 'i', 't', 'r', 'd', '\0'};
     jackos::libc::strcpy(initrd_root->name, foo);
@@ -86,7 +81,6 @@ fs_node_t *jackos::filesystem::initialize_initrd(uint32_t location) {
     initrd_root -> impl = 0;
 
     // Initialize /dev
-    printf("\tInitializing /dev.\n");
     initrd_dev = (fs_node_t*)kmalloc(sizeof(fs_node_t));
     foo[0] = 'd'; foo[1] = 'e'; foo[2] = 'v'; foo[3] = '\0';
     jackos::libc::strcpy(initrd_dev->name, foo);
@@ -101,19 +95,11 @@ fs_node_t *jackos::filesystem::initialize_initrd(uint32_t location) {
     initrd_dev -> ptr = 0;
     initrd_dev -> impl = 0;
 
-    printf("\tAllocating space for files in the ramdisk.\n");
     // Allocate space for files in the ramdisk
     root_nodes = (fs_node_t*) kmalloc(sizeof(fs_node_t) * initrd_header->nfiles);
     nroot_nodes = initrd_header -> nfiles;
 
-    printf("There are: ");
-    printfhex(initrd_header -> nfiles);
-    printf(" files.\n");
-
     for(int i = 0; i < initrd_header->nfiles; i++) {
-        printf("\t\tAllocating file ");
-        printfhex(i);
-        printf("\n");
         file_headers[i].offset += location;
         /* In James Molloy's tutorial, this is, "&file_headers[i].name", but here that
         throws an error. The cause of this issue is unknown, but it should be noted. */

@@ -1,10 +1,11 @@
-#include "makeelfinitrd.h"
+#include "makeinitrd.h"
 
 int main(char argc, char **argv) {
     Elf_Ehdr elf_header;
-    FILE *file = fopen("elfinitrd.elf", "w");
+    FILE *file = fopen("initrd.elf", "w");
     if(!file) {
         perror("fopen");
+        fclose(file);
         return 1;
     }
 
@@ -30,7 +31,7 @@ int main(char argc, char **argv) {
     int nheaders = (argc-1)/2;
     struct initrd_header headers[64];
     printf("Size of header: %lu\n", sizeof(struct initrd_header));
-    unsigned int off = sizeof(struct initrd_header) * 64 + sizeof(int); // This should be recomputed to account for the ELF header
+    unsigned int off = sizeof(struct initrd_header) * 64 + sizeof(int);
     for(int i = 0; i < nheaders; i++) {
         printf("writing file %s->%s at 0x%x\n", argv[i*2+1], argv[i*2+2], off);
         strcpy(headers[i].name, argv[i*2+2]);
@@ -38,6 +39,7 @@ int main(char argc, char **argv) {
         FILE *stream = fopen(argv[i*2+2], "r");
         if(stream == 0) {
             printf("Error: file not found %s\n", argv[i*2+1]);
+            fclose(file);
             return 2;
         }
         fseek(stream, 0, SEEK_END);

@@ -34,15 +34,21 @@ obj/%.o: src/%.s
 jackoskernel.bin: linker.ld $(objects)
 	ld $(LDPARAMS) -T $< -o $@ $(objects)
 
-jackos.iso: jackoskernel.bin
+initrd.elf:
+	gcc Initrd/makeinitrd.c -o makeinitrd.out
+	cp Initrd/ProgramFiles/testfile.txt testfile.txt
+	cp Initrd/ProgramFiles/testfile2.txt testfile2.txt
+	./makeinitrd.out testfile.txt testfile.txt testfile2.txt testfile2.txt
+	rm testfile.txt
+	rm testfile2.txt
+
+jackos.iso: jackoskernel.bin initrd.elf
 	mkdir -p isodir/boot/grub
 	cp $< isodir/boot/jackoskernel.bin
-	# cp initrd.img isodir/boot/initrd.img
-	cp elfinitrd.elf isodir/boot/elfinitrd.elf
+	cp initrd.elf isodir/boot/initrd.elf
 	echo 'menuentry "JackOS" {' > isodir/boot/grub/grub.cfg
 	echo '	multiboot /boot/jackoskernel.bin' >> isodir/boot/grub/grub.cfg
-	# echo '	insmod /boot/initrd.img' >> isodir/boot/grub/grub.cfg
-	echo '	module /boot/elfinitrd.elf' >> isodir/boot/grub/grub.cfg
+	echo '	module /boot/initrd.elf' >> isodir/boot/grub/grub.cfg
 	echo '}' >> isodir/boot/grub/grub.cfg
 	grub-mkrescue -o jackos.iso isodir
 
@@ -54,4 +60,4 @@ run: jackos.iso
 .PHONY: clean
 clean: 
 	rm -rfv isodir obj
-	rm -v *.bin *.iso
+	rm -v *.bin *.iso *.elf *.out
