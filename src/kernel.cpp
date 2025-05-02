@@ -6,6 +6,7 @@
 #include <drivers/driver.h>
 #include <drivers/keyboard.h>
 #include <drivers/mouse.h>
+#include <drivers/pit.h>
 #include <hardware/pci.h>
 #include <drivers/vga.h>
 #include <gui/desktop.h>
@@ -165,6 +166,10 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     #endif
     drvManager.AddDriver(&mouse);
 
+    printf("\tInitiating PIT.\n");
+    PITEventHandler system_clock;
+    PITDriver pit_driver(&interrupts, &system_clock);
+    drvManager.AddDriver(&pit_driver);
 
     printf("Initializing Peripheral Component Interconnect (PCI).\n");
     PCIController pcicontroller;
@@ -174,7 +179,6 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     printf("Initializing graphics.\n");
     VideoGraphicsArray vga;
     #endif
-
 
     // printf("Activating drivers.\n");
     drvManager.ActivateAll();
@@ -229,6 +233,10 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
         }
         ++i;
     }
+
+    printf("Waiting...\n");
+    system_clock.wait(5);
+    printf("Done!\n");
 
     for(;;) { // Infinite loop
         #ifdef GRAPHICS_MODE

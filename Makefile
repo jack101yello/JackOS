@@ -15,6 +15,7 @@ objects = obj/loader.o \
 		  obj/drivers/keyboard.o \
 		  obj/drivers/mouse.o \
 		  obj/drivers/vga.o \
+		  obj/drivers/pit.o \
 		  obj/gui/widget.o \
 		  obj/gui/window.o \
 		  obj/gui/desktop.o \
@@ -37,10 +38,8 @@ jackoskernel.bin: linker.ld $(objects)
 initrd.elf:
 	gcc Initrd/makeinitrd.c -o makeinitrd.out
 	cp Initrd/ProgramFiles/testfile.txt testfile.txt
-	cp Initrd/ProgramFiles/testfile2.txt testfile2.txt
-	./makeinitrd.out testfile.txt testfile.txt testfile2.txt testfile2.txt
+	./makeinitrd.out testfile.txt testfile.txt
 	rm testfile.txt
-	rm testfile2.txt
 
 jackos.iso: jackoskernel.bin initrd.elf
 	mkdir -p isodir/boot/grub
