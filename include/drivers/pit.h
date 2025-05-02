@@ -15,7 +15,7 @@ namespace jackos {
             public:
                 PITEventHandler();
 
-                virtual void OnPulse();
+                virtual void tick();
                 virtual jackos::common::uint32_t get_increment();
                 virtual jackos::common::uint32_t wait(jackos::common::uint32_t duration);
         };

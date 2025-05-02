@@ -6,22 +6,17 @@
 #include <drivers/driver.h>
 #include <drivers/keyboard.h>
 #include <drivers/mouse.h>
+#include <drivers/pit.h>
 #include <hardware/pci.h>
 #include <drivers/vga.h>
 #include <gui/desktop.h>
 #include <gui/window.h>
 #include <multitasking.h>
-<<<<<<< Updated upstream
-#include <programs/terminal.h>
-#include <std/string.h>
-#include <std/c_string.h>
-=======
 #include <multiboot.h>
 #include <filesystem/vfs.h>
 #include <filesystem/initrd.h>
 #include <libc/libc.h>
 #include <drivers/pit.h>
->>>>>>> Stashed changes
 
 using namespace jackos;
 using namespace jackos::common;
@@ -162,9 +157,11 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     MouseDriver mouse(&interrupts, &mousehandler);
     #endif
     drvManager.AddDriver(&mouse);
-    printf("Initiating PIT.\n");
+
+    printf("\tInitiating PIT.\n");
     PITEventHandler system_clock;
-    PITDriver PIT(&interrupts, &system_clock);
+    PITDriver pit_driver(&interrupts, &system_clock);
+    drvManager.AddDriver(&pit_driver);
 
     printf("Initializing Peripheral Component Interconnect (PCI).\n");
     PCIController pcicontroller;
@@ -203,47 +200,42 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
 
     interrupts.Activate();
 
-<<<<<<< Updated upstream
-=======
+    printf("Setting Up Ramdisk.\n");
+    uint32_t initrd_location = *((uint32_t*)multiboot_structure->mods_addr);
+    uint32_t initrd_end = *(uint32_t*)(multiboot_structure->mods_addr+4);
+    /* There is a risk of this being overwritten, in which case we should think about
+    moving the heap to ensure that it doesn't intersect this. */
+    fs_root = initialize_initrd(initrd_location);
+
+    printf("Reading initrd:\n");
+
+    int i = 0;
+    struct dirent* node = 0;
+    while((node = readdir_fs(fs_root, i)) != 0) {
+        printf("Found file ");
+        printf(node -> name);
+        fs_node_t* fsnode = finddir_fs(fs_root, node -> name);
+        if((fsnode -> flags % 0x7) == FS_DIRECTORY) {
+            printf("\n\t(directory)\n");
+        }
+        else {
+            printf("\n\t contents: \"");
+            uint8_t buf[256];
+            uint32_t sz = read_fs(fsnode, 0, 256, buf);
+            for(int j = 0; j < sz; j++) {
+                char foo[2] = {'x', '\0'};
+                foo[0] = buf[j];
+                printf(foo);
+            }
+            printf("\"\n");
+        }
+        ++i;
+    }
+
     printf("Waiting...\n");
+    system_clock.wait(5);
+    printf("Done!\n");
 
-    system_clock.wait(20);
-
-    printf("Waited!\n");
-
-    // printf("Setting Up Ramdisk.\n");
-    // uint32_t initrd_location = *((uint32_t*)multiboot_structure->mods_addr);
-    // uint32_t initrd_end = *(uint32_t*)(multiboot_structure->mods_addr+4);
-    // /* There is a risk of this being overwritten, in which case we should think about
-    // moving the heap to ensure that it doesn't intersect this. */
-    // fs_root = initialize_initrd(initrd_location);
-
-    // printf("Reading initrd:\n");
-
-    // int i = 0;
-    // struct dirent* node = 0;
-    // while((node = readdir_fs(fs_root, i)) != 0) {
-    //     printf("Found file ");
-    //     printf(node -> name);
-    //     fs_node_t* fsnode = finddir_fs(fs_root, node -> name);
-    //     if((fsnode -> flags % 0x7) == FS_DIRECTORY) {
-    //         printf("\n\t(directory)\n");
-    //     }
-    //     else {
-    //         printf("\n\t contents: \"");
-    //         uint8_t buf[256];
-    //         uint32_t sz = read_fs(fsnode, 0, 256, buf);
-    //         for(int j = 0; j < sz; j++) {
-    //             char foo[2] = {'x', '\0'};
-    //             foo[0] = buf[j];
-    //             printf(foo);
-    //         }
-    //         printf("\"\n");
-    //     }
-    //     ++i;
-    // }
-
->>>>>>> Stashed changes
     for(;;) { // Infinite loop
         #ifdef GRAPHICS_MODE
         desktop.Draw(&vga);
