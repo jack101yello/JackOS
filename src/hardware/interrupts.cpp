@@ -180,7 +180,7 @@ uint32_t InterruptManager::doHandleInterrupt(uint8_t interruptNumber, uint32_t e
         printf(msg);
     }
 
-    if(interruptNumber == hardwareoffset) {
+    if(interruptNumber == hardwareoffset) { // The firing of the PIT
         esp = (uint32_t)taskManager->Schedule((CPUState*)esp);
     }
 
