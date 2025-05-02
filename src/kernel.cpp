@@ -16,15 +16,13 @@
 #include <filesystem/vfs.h>
 #include <filesystem/initrd.h>
 #include <libc/libc.h>
-#include <drivers/pit.h>
 
 using namespace jackos;
 using namespace jackos::common;
 using namespace jackos::drivers;
 using namespace jackos::hardware;
 using namespace jackos::gui;
-using namespace jackos::programs;
-using namespace jackos::std;
+using namespace jackos::filesystem;
 
 void printf(const char* str) {
     static uint16_t* VideoMemory = (uint16_t*)0xb8000;
@@ -61,8 +59,13 @@ void printf(const char* str) {
     }
 }
 
-void printf(jackos::std::string str) {
-    printf(str.getStr());
+void clear_screen() {
+    for(int i = 0; i < 25; i++) {
+        for(int j = 0; j < 80; j++) {
+            printf(" ");
+        }
+        printf("\n");
+    }
 }
 
 void printfhex(int val) {
@@ -95,6 +98,8 @@ class MouseToConsole : public MouseEventHandler {
         }
 };
 
+MemoryManager* kmm;
+
 void sysprintf(const char* str) {
     asm("int $0x80" : : "a" (4), "b" (str));
 }
@@ -112,7 +117,9 @@ extern "C" void* heap;
 
 // #define GRAPHICS_MODE
 
-extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
+extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magicnumber) {
+    clear_screen();
+
     printf("Initializing JackOS Kernel\n");
 
     printf("Setting up Global Descriptor Table (GDT).\n");
@@ -121,6 +128,7 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
     size_t heap = 10*1024*1024;
     MemoryManager memoryManager(heap, (*memupper)*1024 - heap - 10*1024);
+    kmm = &memoryManager; // Set the global memory manager to this memory manager, so that everyone can call kmalloc
     printf("Heap: 0x");
     printfhex((heap >> 24) & 0xFF);
     printfhex((heap >> 16) & 0xFF);
@@ -149,7 +157,7 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     DriverManager drvManager;
 
     printf("\tInitiating mouse.\n");
-    // MouseToConsole mhandler;
+    MouseToConsole mhandler;
     #ifdef GRAPHICS_MODE
     MouseDriver mouse(&interrupts, &desktop);
     #else
@@ -172,7 +180,7 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     VideoGraphicsArray vga;
     #endif
 
-    printf("Activating drivers.\n");
+    // printf("Activating drivers.\n");
     drvManager.ActivateAll();
 
     #ifdef GRAPHICS_MODE
@@ -187,14 +195,8 @@ extern "C" void kernel_main(void* multiboot_structure, uint32_t magicnumber) {
     #ifdef GRAPHICS_MODE
     KeyboardDriver keyboard(&interrupts, &desktop);
     #else
-    #ifdef TERMINAL_MODE
-    Terminal terminal;
-    TerminalKeyboardEventHandler termkbhandler(&terminal);
-    KeyboardDriver keyboard(&interrupts, &termkbhandler);
-    #else
     KeyboardEventHandler kbhandler;
     KeyboardDriver keyboard(&interrupts, &kbhandler);
-    #endif
     #endif
     drvManager.AddDriver(&keyboard);
 
