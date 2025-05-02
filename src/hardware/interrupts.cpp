@@ -181,13 +181,7 @@ uint32_t InterruptManager::doHandleInterrupt(uint8_t interruptNumber, uint32_t e
         printf(msg);
     }
 
-    switch(interruptNumber) {
-        case 0x20: // PIT
-            
-            break;
-    }
-
-    if(interruptNumber == hardwareoffset) { // PIT
+    if(interruptNumber == hardwareoffset) { // The firing of the PIT
         esp = (uint32_t)taskManager->Schedule((CPUState*)esp);
     }
 
