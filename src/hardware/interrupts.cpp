@@ -120,10 +120,11 @@ InterruptManager::~InterruptManager() {
 }
 
 void InterruptManager::Activate() {
+
     if(ActiveInterruptManager != 0) {
         ActiveInterruptManager -> Deactivate();
     }
-   ActiveInterruptManager = this;
+    ActiveInterruptManager = this;
     asm("sti"); // Enable interrupts
 }
 
@@ -143,25 +144,25 @@ uint32_t InterruptManager::handleInterrupt(uint8_t interruptNumber, uint32_t esp
 
 void kpanic(uint8_t interruptNumber, uint32_t esp) {
     switch(interruptNumber) { // Check for exceptions
-        case 0x00: printf("\n/// Exception! 0x00\n"); break; // Single-step interrupt
-        case 0x02: printf("\n/// Exception! 0x02\n"); break; // Non-maskable interrupt (NMI)
-        case 0x03: printf("\n/// Exception! 0x03\n"); break; // Breakpoint
-        case 0x04: printf("\n/// Exception! 0x04\n"); break; // Overflow
-        case 0x05: printf("\n/// Exception! 0x05\n"); break; // Bound range exceeded
-        case 0x06: printf("\n/// Exception! 0x06\n"); break; // Invalid opcode
-        case 0x07: printf("\n/// Exception! 0x07\n"); break; // Coprocessor not available
-        case 0x08: printf("\n/// Exception! 0x08\n"); break; // Double fault
-        case 0x09: printf("\n/// Exception! 0x09\n"); break; // Coprocessor segment overrun
-        case 0x0A: printf("\n/// Exception! 0x0A\n"); break; // Invalid task state segment
-        case 0x0B: printf("\n/// Exception! 0x0B\n"); break; // Segment not present
-        case 0x0C: printf("\n/// Exception! 0x0C\n"); break; // Stack segment fault
-        case 0x0D: printf("\n/// Exception! 0x0D\n"); break; // General protection fault
-        case 0x0E: printf("\n/// Exception! 0x0E\n"); break; // Page fault
-        case 0x0F: printf("\n/// Exception! 0x0F\n"); break; // Reserved
-        case 0x10: printf("\n/// Exception! 0x10\n"); break; // x87 floating point exception
-        case 0x11: printf("\n/// Exception! 0x11\n"); break; // Alignment check
-        case 0x12: printf("\n/// Exception! 0x12\n"); break; // Machine check
-        case 0x13: printf("\n/// Exception! 0x13\n"); break; // SIMD floating point exception
+        case 0x00: printf("\n/// Exception 0x00: Single-step interrupt.\n"); break; // Single-step interrupt
+        case 0x02: printf("\n/// Exception 0x02: Non-maskable interrupt (NMI).\n"); break; // Non-maskable interrupt (NMI)
+        case 0x03: printf("\n/// Exception 0x03: Breakpoint.\n"); break; // Breakpoint
+        case 0x04: printf("\n/// Exception 0x04: Overflow.\n"); break; // Overflow
+        case 0x05: printf("\n/// Exception 0x05: Bound range exceeded.\n"); break; // Bound range exceeded
+        case 0x06: printf("\n/// Exception 0x06: Invalid opcode.\n"); break; // Invalid opcode
+        case 0x07: printf("\n/// Exception 0x07: Coprocessor unavailable.\n"); break; // Coprocessor not available
+        case 0x08: printf("\n/// Exception 0x08: Double fault.\n"); break; // Double fault
+        case 0x09: printf("\n/// Exception 0x09: Coprocessor segment overrun.\n"); break; // Coprocessor segment overrun
+        case 0x0A: printf("\n/// Exception 0x0A: Invalid task state segment.\n"); break; // Invalid task state segment
+        case 0x0B: printf("\n/// Exception 0x0B: Segment not present.\n"); break; // Segment not present
+        case 0x0C: printf("\n/// Exception 0x0C: Stack segment fault.\n"); break; // Stack segment fault
+        case 0x0D: printf("\n/// Exception 0x0D: General protection fault.\n"); break; // General protection fault
+        case 0x0E: printf("\n/// Exception 0x0E: Page fault.\n"); break; // Page fault
+        case 0x0F: printf("\n/// Exception 0x0F: Reserved exception.\n"); break; // Reserved
+        case 0x10: printf("\n/// Exception 0x10: x87 floating point exception.\n"); break; // x87 floating point exception
+        case 0x11: printf("\n/// Exception 0x11: Alignment check.\n"); break; // Alignment check
+        case 0x12: printf("\n/// Exception 0x12: Machine check.\n"); break; // Machine check
+        case 0x13: printf("\n/// Exception 0x13: SIMD floating point exception.\n"); break; // SIMD floating point exception
 
         default: break; // This should never run; a mistake has been made.
     }

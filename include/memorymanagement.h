@@ -24,12 +24,7 @@ namespace jackos {
     };
 }
 
-void* operator new(unsigned size);
-void* operator new[](unsigned size);
-void* operator new(unsigned size, void* ptr);
-void* operator new[](unsigned size, void* ptr);
-
-void operator delete(void* ptr);
-void operator delete[](void* ptr);
+void* kmalloc(jackos::common::size_t size);
+void kfree(void* ptr);
 
 #endif

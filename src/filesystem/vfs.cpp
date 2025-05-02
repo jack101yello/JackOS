@@ -4,60 +4,52 @@ using namespace jackos;
 using namespace jackos::common;
 using namespace jackos::filesystem;
 
-fs_node* fs_root = 0; // The filesystem root
+fs_node_t* jackos::filesystem::fs_root = 0; // The root of the filesystem
 
-uint32_t VFS::read_fs(fs_node* node, uint32_t offset, uint32_t size, uint8_t* buffer) {
+uint32_t jackos::filesystem::read_fs(fs_node_t* node, uint32_t offset, uint32_t size, uint8_t* buffer) {
     if(node -> read != 0) {
         return node -> read(node, offset, size, buffer);
     }
-    return 0;
+    else {
+        return 0;
+    }
 }
 
-uint32_t VFS::write_fs(fs_node* node, jackos::common::uint32_t offset, jackos::common::uint32_t size, jackos::common::uint8_t* buffer) {
+uint32_t jackos::filesystem::write_fs(fs_node_t* node, uint32_t offset, uint32_t size, uint8_t* buffer) {
     if(node -> write != 0) {
         return node -> write(node, offset, size, buffer);
     }
-    return 0;
+    else {
+        return 0;
+    }
 }
 
-void* VFS::open_fs(fs_node* node, jackos::common::uint8_t read, jackos::common::uint8_t write) {
+void jackos::filesystem::open_fs(fs_node_t* node, uint8_t read, uint8_t write) {
     if(node -> open != 0) {
-        return node -> open(node, read, write);
+        node -> open(node);
     }
-    return 0;
 }
 
-void* VFS::close_fs(fs_node* node) {
+void jackos::filesystem::close_fs(fs_node_t* node) {
     if(node -> close != 0) {
-        return node -> close(node);
+        node -> close(node);
     }
-    return 0;
 }
 
-fs_node VFS::volOpenFile(const char* filename) {
-    if(filename) {
-        char device = 'a'; // Default to a: drive
-        char* fname = (char*)filename;
-        if(filename[1] == ':') {
-            device = filename[0];
-            fname += 2; // Strip out the a:
-        }
-        if(file_systems[device - 'a']) {
-            fs_node file = file_systems[device - 'a'] -> Open(fname);
-            file.device = device;
-            return file;
-        }
+struct dirent* jackos::filesystem::readdir_fs(fs_node_t* node, uint32_t index) {
+    if((node -> flags & 0x7) == FS_DIRECTORY && node -> readdir != 0) {
+        return node -> readdir(node, index);
     }
-    fs_node file;
-    file.flags = FS_INVALID;
-    return file;
+    else {
+        return nullptr;
+    }
 }
 
-void VFS::volRegisterFileSystem(file_system* fs, jackos::common::uint32_t deviceID) {
-    if(deviceID < 0 || deviceID > DEVICE_MAX) {
-        return;
+fs_node_t* jackos::filesystem::finddir_fs(fs_node_t* node, char* name) {
+    if((node -> flags & 0x7) == FS_DIRECTORY && node -> finddir != 0) {
+        return node -> finddir(node, name);
     }
-    if(fs) {
-        file_systems[deviceID] = fs;
+    else {
+        return nullptr;
     }
 }

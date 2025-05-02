@@ -3,6 +3,8 @@
 using namespace jackos;
 using namespace jackos::common;
 
+extern MemoryManager* kmm;
+
 MemoryManager* MemoryManager::activeMemoryManager = 0;
 
 MemoryManager::MemoryManager(size_t start, size_t size) {
@@ -76,36 +78,10 @@ void MemoryManager::free(void* ptr) {
     }
 }
 
-void* operator new(unsigned size) {
-    if(jackos::MemoryManager::activeMemoryManager == 0) {
-        return 0;
-    }
-    return jackos::MemoryManager::activeMemoryManager -> malloc(size);
+void* kmalloc(size_t size) {
+    return kmm -> malloc(size);
 }
 
-void* operator new[](unsigned size) {
-    if(jackos::MemoryManager::activeMemoryManager == 0) {
-        return 0;
-    }
-    return jackos::MemoryManager::activeMemoryManager -> malloc(size);
-}
-
-void* operator new(unsigned size, void* ptr) {
-    return ptr;
-}
-
-void* operator new[](unsigned size, void* ptr) {
-    return ptr;
-}
-
-void operator delete(void* ptr) {
-    if(jackos::MemoryManager::activeMemoryManager != 0) {
-        jackos::MemoryManager::activeMemoryManager -> free(ptr);
-    }
-}
-
-void operator delete[](void* ptr) {
-    if(jackos::MemoryManager::activeMemoryManager != 0) {
-        jackos::MemoryManager::activeMemoryManager -> free(ptr);
-    }
+void kfree(void* ptr) {
+    kmm -> free(ptr);
 }
