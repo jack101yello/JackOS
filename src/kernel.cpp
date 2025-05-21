@@ -100,10 +100,6 @@ class MouseToConsole : public MouseEventHandler {
 
 MemoryManager* kmm;
 
-void sysprintf(const char* str) {
-    asm("int $0x80" : : "a" (4), "b" (str));
-}
-
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
 extern "C" constructor end_ctors;
@@ -146,6 +142,7 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     
     printf("Setting up Interrupt Descriptor table (IDT).\n");
     InterruptManager interrupts(0x20, &gdt, &taskManager);
+    printf("Setting up syscalls.\n");
     SyscallHandler syscalls(&interrupts, 0x80);
 
     #ifdef GRAPHICS_MODE
@@ -209,34 +206,12 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     moving the heap to ensure that it doesn't intersect this. */
     fs_root = initialize_initrd(initrd_location);
 
-    printf("Reading initrd:\n");
+    // printf("Waiting...\n");
+    // system_clock.wait(1);
+    // printf("Done!\n");
 
-    int i = 0;
-    struct dirent* node = 0;
-    while((node = readdir_fs(fs_root, i)) != 0) {
-        printf("Found file ");
-        printf(node -> name);
-        fs_node_t* fsnode = finddir_fs(fs_root, node -> name);
-        if((fsnode -> flags % 0x7) == FS_DIRECTORY) {
-            printf("\n\t(directory)\n");
-        }
-        else {
-            printf("\n\t contents: \"");
-            uint8_t buf[256];
-            uint32_t sz = read_fs(fsnode, 0, 256, buf);
-            for(int j = 0; j < sz; j++) {
-                char foo[2] = {'x', '\0'};
-                foo[0] = buf[j];
-                printf(foo);
-            }
-            printf("\"\n");
-        }
-        ++i;
-    }
-
-    printf("Waiting...\n");
-    system_clock.wait(5);
-    printf("Done!\n");
+    printf("Testing syscalls...\n");
+    syscalls._printf("Syscall print!\n");
 
     for(;;) { // Infinite loop
         #ifdef GRAPHICS_MODE

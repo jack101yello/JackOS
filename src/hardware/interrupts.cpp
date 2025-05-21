@@ -163,6 +163,7 @@ void kpanic(uint8_t interruptNumber, uint32_t esp) {
         case 0x11: printf("\n/// Exception 0x11: Alignment check.\n"); break; // Alignment check
         case 0x12: printf("\n/// Exception 0x12: Machine check.\n"); break; // Machine check
         case 0x13: printf("\n/// Exception 0x13: SIMD floating point exception.\n"); break; // SIMD floating point exception
+        case 0x14: printf("\n/// Exception 0x14 (Custom 1): Invalid Syscall.\n"); break;
 
         default: break; // This should never run; a mistake has been made.
     }
