@@ -17,7 +17,6 @@ SyscallHandler::~SyscallHandler() {
 extern void kpanic(uint8_t interruptNumber, uint32_t esp);
 extern void printf(const char* str);
 extern void printfhex(int num);
-extern int errno;
 
 uint32_t SyscallHandler::HandleInterrupt(uint32_t esp) {
     CPUState* cpu = (CPUState*)esp;
@@ -74,13 +73,13 @@ char** SyscallHandler::_environ() {
 int SyscallHandler::_execve(char* name, char** argv, char** env) {
     // We don't have processes, so this can be ignored until later.
     // asm("int $0x80" : : "a" (11), "b" (name), "c" (argv), "d" (env));
-    errno = ENOMEM;
+    // errno = ENOMEM;
     return -1;
 }
 
 // Create a new process.
 int SyscallHandler::_fork() {
-    errno = EAGAIN;
+    // errno = EAGAIN;
     return -1;
 }
 
@@ -102,13 +101,13 @@ int SyscallHandler::_isatty(int file) {
 
 // Send a signal.
 int SyscallHandler::_kill(int pid, int sig) {
-    errno = EINVAL;
+    // errno = EINVAL;
     return -1;
 }
 
 // Rename a file.
 int SyscallHandler::_link(char* o, char* n) {
-    errno = EMLINK;
+    // errno = EMLINK;
     return -1;
 }
 
@@ -120,7 +119,7 @@ int SyscallHandler::_lseek(int file, int ptr, int dir) {
 // Open a file.
 int SyscallHandler::_open(const char* name, int flags, int mode) {
     int status;
-    asm("int 0x80" : "=a" (status) : "a" (5), "b" (name), "c" (flags), "d" (mode));
+    asm("int $0x80" : "=a" (status) : "a" (5), "b" (name), "c" (flags), "d" (mode));
     return status;
 }
 
@@ -132,7 +131,7 @@ int SyscallHandler::_read(int file, char* ptr, int len) {
 // Increase program data space.
 void* SyscallHandler::_sbrk(int incr) {
     void* addr;
-    asm("int 0x80" : "=a" (addr) : "a" (20), "b" (incr));
+    asm("int $0x80" : "=a" (addr) : "a" (20), "b" (incr));
     return addr;
 }
 
@@ -149,7 +148,7 @@ int SyscallHandler::_times(struct tms* buf) {
 
 // Remove a file's directory entry.
 int SyscallHandler::_unlink(char* name) {
-    errno = ENOENT;
+    // errno = ENOENT;
     return -1;
 }
 
@@ -159,7 +158,7 @@ int SyscallHandler::_write(int file, char *ptr, int len) {
 }
 
 int SyscallHandler::_wait(int* status) {
-    errno = ECHILD;
+    // errno = ECHILD;
     return -1;
 }
 
@@ -198,14 +197,5 @@ int SyscallHandler::_open_background(const char* name, int flags, int mode) {
 }
 
 void* SyscallHandler::_sbrk_background(int incr) {
-    extern char _end; // Defined by the linker
-    static char* heap_end;
-    char *prev_heap_end;
-    if(heap_end == 0) {
-        heap_end = &_end;
-    }
-    prev_heap_end = heap_end;
-    // Should check here for heap/stack collision, but I don't know how.
-    heap_end += incr;
-    return (void*) prev_heap_end;
+    return nullptr;
 }
