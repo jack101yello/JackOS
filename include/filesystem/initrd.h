@@ -4,7 +4,7 @@
 #include <common/types.h>
 #include <filesystem/vfs.h>
 #include <memorymanagement.h>
-#include <libc/libc.h>
+#include <str/str.h>
 
 namespace jackos {
     namespace filesystem {

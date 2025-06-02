@@ -2,6 +2,10 @@
     "files.associations": {
         "compare": "cpp",
         "memory": "cpp",
-        "type_traits": "cpp"
-    }
+        "type_traits": "cpp",
+        "cdefs.h": "c",
+        "stdio.h": "c",
+        "stdlib.h": "c"
+    },
+    "C_Cpp.default.compilerPath": "/home/jack/opt/cross/bin/i386-elf-g++"
 }

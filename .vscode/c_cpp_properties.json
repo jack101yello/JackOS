@@ -1,0 +1,45 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "compilerPath": "/home/jack/opt/cross/bin/i386-elf-g++",
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-x64",
+            "configurationProvider": "ms-vscode.makefile-tools"
+        },
+        {
+            "name": "JackOS",
+            "includePath": [
+                "/home/jack/JackOS/**"
+            ],
+            "defines": [],
+            "compilerPath": "/home/jack/opt/cross/bin/i386-elf-g++",
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-x86",
+            "compilerPathInCppPropertiesJson": "/usr/bin/gcc",
+            "mergeConfigurations": false,
+            "recursiveIncludes": {},
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "compilerArgs": [
+                "-g",
+                "-Iinclude",
+                "-fno-use-cxa-atexit",
+                "-nostdlib",
+                "-fno-builtin",
+                "-fno-rtti",
+                "-fno-exceptions",
+                "-fno-leading-underscore",
+                "-fcheck-new"
+            ]
+        }
+    ],
+    "version": 4
+}

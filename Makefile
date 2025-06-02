@@ -1,4 +1,4 @@
-GPPPARAMS = -g -Iinclude -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -fcheck-new
+GPPPARAMS = -g -Iinclude -Ilibc/include -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -fcheck-new
 ASPARAMS = -32
 LDPARAMS = -melf_i386 -z noexecstack
 
@@ -21,7 +21,7 @@ objects = obj/loader.o \
 		  obj/gui/desktop.o \
 		  obj/filesystem/vfs.o \
 		  obj/filesystem/initrd.o \
-		  obj/libc/libc.o \
+		  obj/str/str.o \
 		  obj/kernel.o
 
 obj/%.o: src/%.cpp

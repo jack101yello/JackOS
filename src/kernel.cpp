@@ -15,7 +15,8 @@
 #include <multiboot.h>
 #include <filesystem/vfs.h>
 #include <filesystem/initrd.h>
-#include <libc/libc.h>
+#include <str/str.h>
+#include <common/printf.h>
 
 using namespace jackos;
 using namespace jackos::common;
@@ -23,41 +24,6 @@ using namespace jackos::drivers;
 using namespace jackos::hardware;
 using namespace jackos::gui;
 using namespace jackos::filesystem;
-
-void printf(const char* str) {
-    static uint16_t* VideoMemory = (uint16_t*)0xb8000;
-
-    static uint8_t x = 0, y = 0;
-
-    for(int i = 0; str[i] != '\0'; ++i) {
-        switch(str[i]) {
-            case '\n':
-                y++;
-                x = 0;
-                break;
-            case '\0':
-                return;
-            default:
-                VideoMemory[80*y + x] = (VideoMemory[80*y + x] & 0xFF00) | str[i];
-                x++;
-                break;
-        }
-
-        if(x >= 80) { // Newline
-            y++;
-            x = 0;
-        }
-        if(y >= 25) { // Scrolling
-            for(y = 0; y < 25; y++) {
-                for(x = 0; x < 80; x++) {
-                    VideoMemory[80*y+x] = (VideoMemory[80*y+x] & 0xFF00) | ' ';
-                }
-            }
-            x = 0;
-            y = 0;
-        }
-    }
-}
 
 void clear_screen() {
     for(int i = 0; i < 25; i++) {
