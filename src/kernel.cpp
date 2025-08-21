@@ -15,17 +15,9 @@
 #include <multiboot.h>
 #include <filesystem/vfs.h>
 #include <filesystem/initrd.h>
-<<<<<<< Updated upstream
 #include <libc/libc.h>
-=======
-#include <str/str.h>
-#include <common/printf.h>
 #include <filesystem/ELF/elfloader.h>
 #include <common/common.h>
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 using namespace jackos;
 using namespace jackos::common;
@@ -169,14 +161,8 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     
     // printf("Setting up Interrupt Descriptor table (IDT).\n");
     InterruptManager interrupts(0x20, &gdt, &taskManager);
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
+
     // printf("Setting up syscalls.\n");
->>>>>>> Stashed changes
-=======
-    // printf("Setting up syscalls.\n");
->>>>>>> Stashed changes
     SyscallHandler syscalls(&interrupts, 0x80);
 
     #ifdef GRAPHICS_MODE
@@ -248,39 +234,6 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     moving the heap to ensure that it doesn't intersect this. */
     fs_root = initialize_initrd(initrd_location);
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    printf("Reading initrd:\n");
-
-    int i = 0;
-    struct dirent* node = 0;
-    while((node = readdir_fs(fs_root, i)) != 0) {
-        printf("Found file ");
-        printf(node -> name);
-        fs_node_t* fsnode = finddir_fs(fs_root, node -> name);
-        if((fsnode -> flags % 0x7) == FS_DIRECTORY) {
-            printf("\n\t(directory)\n");
-        }
-        else {
-            printf("\n\t contents: \"");
-            uint8_t buf[256];
-            uint32_t sz = read_fs(fsnode, 0, 256, buf);
-            for(int j = 0; j < sz; j++) {
-                char foo[2] = {'x', '\0'};
-                foo[0] = buf[j];
-                printf(foo);
-            }
-            printf("\"\n");
-        }
-        ++i;
-    }
-
-    printf("Waiting...\n");
-    system_clock.wait(5);
-    printf("Done!\n");
-=======
-=======
->>>>>>> Stashed changes
     // int i = 0;
     // struct dirent* node = 0;
     // while((node = readdir_fs(fs_root, i)) != 0) {
@@ -315,10 +268,6 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     system_clock.wait(1);
     elf_file.run();
     printf("Ran!\n");
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
     for(;;) { // Infinite loop
         #ifdef GRAPHICS_MODE
