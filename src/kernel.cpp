@@ -15,7 +15,17 @@
 #include <multiboot.h>
 #include <filesystem/vfs.h>
 #include <filesystem/initrd.h>
+<<<<<<< Updated upstream
 #include <libc/libc.h>
+=======
+#include <str/str.h>
+#include <common/printf.h>
+#include <filesystem/ELF/elfloader.h>
+#include <common/common.h>
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
 using namespace jackos;
 using namespace jackos::common;
@@ -76,6 +86,15 @@ void printfhex(int val) {
     printf(msg);
 }
 
+void printaddr(int addr) {
+    char msg[] = "0x00000000";
+    char hex[] = "0123456789ABCDEF";
+    for(int i = 2; i <= 9; i++) {
+        msg[i] = hex[(addr >> (36-(4*i))) & 0x0F];
+    }
+    printf(msg);
+}
+
 class MouseToConsole : public MouseEventHandler {
     int8_t x, y;
     public:
@@ -117,35 +136,47 @@ extern "C" void* heap;
 
 // #define GRAPHICS_MODE
 
+void breakpoint() {
+    printf("");
+}
+
 extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magicnumber) {
     clear_screen();
 
-    printf("Initializing JackOS Kernel\n");
+    // printf("Initializing JackOS Kernel\n");
 
-    printf("Setting up Global Descriptor Table (GDT).\n");
+    // printf("Setting up Global Descriptor Table (GDT).\n");
     GlobalDescriptorTable gdt;
 
     uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
     size_t heap = 10*1024*1024;
     MemoryManager memoryManager(heap, (*memupper)*1024 - heap - 10*1024);
     kmm = &memoryManager; // Set the global memory manager to this memory manager, so that everyone can call kmalloc
-    printf("Heap: 0x");
-    printfhex((heap >> 24) & 0xFF);
-    printfhex((heap >> 16) & 0xFF);
-    printfhex((heap >>  8) & 0xFF);
-    printfhex((heap      ) & 0xFF);
+    // printf("Heap: 0x");
+    // printfhex((heap >> 24) & 0xFF);
+    // printfhex((heap >> 16) & 0xFF);
+    // printfhex((heap >>  8) & 0xFF);
+    // printfhex((heap      ) & 0xFF);
     void* allocated = memoryManager.malloc(1024);
-    printf("\nAllocated: 0x");
-    printfhex(((size_t)allocated >> 24) & 0xFF);
-    printfhex(((size_t)allocated >> 16) & 0xFF);
-    printfhex(((size_t)allocated >>  8) & 0xFF);
-    printfhex(((size_t)allocated      ) & 0xFF);
-    printf("\n");
+    // printf("\nAllocated: 0x");
+    // printfhex(((size_t)allocated >> 24) & 0xFF);
+    // printfhex(((size_t)allocated >> 16) & 0xFF);
+    // printfhex(((size_t)allocated >>  8) & 0xFF);
+    // printfhex(((size_t)allocated      ) & 0xFF);
+    // printf("\n");
 
     TaskManager taskManager;
     
-    printf("Setting up Interrupt Descriptor table (IDT).\n");
+    // printf("Setting up Interrupt Descriptor table (IDT).\n");
     InterruptManager interrupts(0x20, &gdt, &taskManager);
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+    // printf("Setting up syscalls.\n");
+>>>>>>> Stashed changes
+=======
+    // printf("Setting up syscalls.\n");
+>>>>>>> Stashed changes
     SyscallHandler syscalls(&interrupts, 0x80);
 
     #ifdef GRAPHICS_MODE
@@ -153,10 +184,10 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     Desktop desktop(320, 200, 0x00, 0x00, 0xA8);
     #endif
 
-    printf("Setting up drivers...\n");
+    // printf("Setting up drivers...\n");
     DriverManager drvManager;
 
-    printf("\tInitiating mouse.\n");
+    // printf("\tInitiating mouse.\n");
     MouseToConsole mhandler;
     #ifdef GRAPHICS_MODE
     MouseDriver mouse(&interrupts, &desktop);
@@ -166,12 +197,12 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     #endif
     drvManager.AddDriver(&mouse);
 
-    printf("\tInitiating PIT.\n");
+    // printf("\tInitiating PIT.\n");
     PITEventHandler system_clock;
     PITDriver pit_driver(&interrupts, &system_clock);
     drvManager.AddDriver(&pit_driver);
 
-    printf("Initializing Peripheral Component Interconnect (PCI).\n");
+    // printf("Initializing Peripheral Component Interconnect (PCI).\n");
     PCIController pcicontroller;
     pcicontroller.SelectDrivers(&drvManager, &interrupts);
 
@@ -201,14 +232,24 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     drvManager.AddDriver(&keyboard);
 
     interrupts.Activate();
+    
+    // printf("Checking which elf modules are loaded:\n");
+    multiboot_module_t* elf_modules = (multiboot_module_t*) multiboot_structure -> mods_addr;
+    // for(int i = 0; i < multiboot_structure -> mods_count; i++) {
+    //     printf("\t");
+    //     printf((const char*)elf_modules[i].string);
+    //     printf("\n");
+    // }
 
-    printf("Setting Up Ramdisk.\n");
+    // printf("Setting Up Ramdisk.\n");
     uint32_t initrd_location = *((uint32_t*)multiboot_structure->mods_addr);
     uint32_t initrd_end = *(uint32_t*)(multiboot_structure->mods_addr+4);
     /* There is a risk of this being overwritten, in which case we should think about
     moving the heap to ensure that it doesn't intersect this. */
     fs_root = initialize_initrd(initrd_location);
 
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     printf("Reading initrd:\n");
 
     int i = 0;
@@ -237,6 +278,47 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     printf("Waiting...\n");
     system_clock.wait(5);
     printf("Done!\n");
+=======
+=======
+>>>>>>> Stashed changes
+    // int i = 0;
+    // struct dirent* node = 0;
+    // while((node = readdir_fs(fs_root, i)) != 0) {
+    //     printf("Found node: ");
+    //     printf(node -> name);
+    //     fs_node_t* fsnode = finddir_fs(fs_root, node -> name);
+    //     if((fsnode -> flags % 0x7) == FS_DIRECTORY) {
+    //         printf(" (directory)");
+    //     }
+    //     printf("\n");
+    //     ++i;
+    // }
+    // printf("\n");
+
+    // printf("Waiting...\n");
+    // system_clock.wait(1);
+    // printf("Done!\n");
+
+    // printf("Testing syscalls...\n");
+    // syscalls._printf("Syscall print!\n");
+
+    // system_clock.wait(3);
+
+    jackos::filesystem::elf::Elf_File elf_file((Elf_Ehdr*)elf_modules[1].mod_start);
+    if(!elf_file.check_file()) {
+        printf("Invalid ELF file.\n");
+        for(;;);
+    }
+    elf_file.header_dump();
+    elf_file.phdr_dump();
+    printf("Attempting to run.\n");
+    system_clock.wait(1);
+    elf_file.run();
+    printf("Ran!\n");
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
     for(;;) { // Infinite loop
         #ifdef GRAPHICS_MODE
