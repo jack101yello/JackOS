@@ -66,7 +66,6 @@ void Elf_File::run() {
         memcpy((uint8_t*)ph->vaddr, (uint8_t*)header + ph->offset, ph->filesz);
         memset((uint8_t*)(ph->vaddr + ph->filesz), 0, ph->memsz - ph->filesz);
     }
-    entry_dump();
     typedef void (*entry_point_t)(void);
     entry_point_t entry = (entry_point_t)header->e_entry;
     entry();

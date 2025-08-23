@@ -67,7 +67,7 @@ jackos.iso: jackoskernel.bin initrd.elf
 	cp ~/JackOSPrograms/hello.elf isodir/boot/hello.elf
 	echo 'menuentry "JackOS" {' > isodir/boot/grub/grub.cfg
 	echo '	multiboot /boot/jackoskernel.bin' >> isodir/boot/grub/grub.cfg
-	echo '	module /boot/initrd.elf initrd.elf' >> isodir/boot/grub/grub.cfg
+	# echo '	module /boot/initrd.elf initrd.elf' >> isodir/boot/grub/grub.cfg
 	echo '	module /boot/hello.elf hello.elf' >> isodir/boot/grub/grub.cfg
 	echo '}' >> isodir/boot/grub/grub.cfg
 	grub-mkrescue -o jackos.iso isodir

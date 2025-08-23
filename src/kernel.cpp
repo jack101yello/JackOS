@@ -126,7 +126,7 @@ extern "C" void callConstructors() {
 
 extern "C" void* heap;
 
-// #define GRAPHICS_MODE
+#define GRAPHICS_MODE
 
 void breakpoint() {
     printf("");
@@ -135,9 +135,9 @@ void breakpoint() {
 extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magicnumber) {
     clear_screen();
 
-    // printf("Initializing JackOS Kernel\n");
+    printf("Initializing JackOS Kernel\n");
 
-    // printf("Setting up Global Descriptor Table (GDT).\n");
+    printf("Setting up Global Descriptor Table (GDT).\n");
     GlobalDescriptorTable gdt;
 
     uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
@@ -159,80 +159,72 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
 
     TaskManager taskManager;
     
-    // printf("Setting up Interrupt Descriptor table (IDT).\n");
+    printf("Setting up Interrupt Descriptor table (IDT).\n");
     InterruptManager interrupts(0x20, &gdt, &taskManager);
 
-    // printf("Setting up syscalls.\n");
+    
+    printf("Setting up syscalls.\n");
     SyscallHandler syscalls(&interrupts, 0x80);
 
-    #ifdef GRAPHICS_MODE
-    printf("Instantiating Desktop.\n");
-    Desktop desktop(320, 200, 0x00, 0x00, 0xA8);
-    #endif
 
-    // printf("Setting up drivers...\n");
     DriverManager drvManager;
-
-    // printf("\tInitiating mouse.\n");
-    MouseToConsole mhandler;
     #ifdef GRAPHICS_MODE
+    printf("Initializing graphics.\n");
+    VideoGraphicsArray vga;
+
+    printf("Instantiating Desktop.\n");
+    Desktop desktop(SCREEN_WIDTH, SCREEN_HEIGHT, 0x00, 0x00, 0x00);
+
+    printf("Setting up drivers...\n");
+
+    printf("\tInitiating mouse.\n");
     MouseDriver mouse(&interrupts, &desktop);
+    drvManager.AddDriver(&mouse);
+    printf("\tInitiating keyboard.\n");
+    KeyboardDriver keyboard(&interrupts, &desktop);
+    drvManager.AddDriver(&keyboard);
     #else
+    printf("Setting up drivers...\n");
+
+    printf("\tInitiating mouse.\n");
+    MouseToConsole mhandler;
     MouseToConsole mousehandler;
     MouseDriver mouse(&interrupts, &mousehandler);
-    #endif
     drvManager.AddDriver(&mouse);
+    printf("\tInitiating keyboard.\n");
+    KeyboardEventHandler kbhandler;
+    KeyboardDriver keyboard(&interrupts, &kbhandler);
+    drvManager.AddDriver(&keyboard);
+    #endif
 
-    // printf("\tInitiating PIT.\n");
+    printf("\tInitiating PIT.\n");
     PITEventHandler system_clock;
     PITDriver pit_driver(&interrupts, &system_clock);
     drvManager.AddDriver(&pit_driver);
 
-    // printf("Initializing Peripheral Component Interconnect (PCI).\n");
+    printf("Initializing Peripheral Component Interconnect (PCI).\n");
     PCIController pcicontroller;
     pcicontroller.SelectDrivers(&drvManager, &interrupts);
 
-    #ifdef GRAPHICS_MODE
-    printf("Initializing graphics.\n");
-    VideoGraphicsArray vga;
-    #endif
-
-    // printf("Activating drivers.\n");
+    printf("Activating drivers.\n");
     drvManager.ActivateAll();
-
-    #ifdef GRAPHICS_MODE
-    printf("Switching to graphics mode.\n");
-    vga.SetMode(320, 200, 8);
-    Window win1(&desktop, 10, 10, 20, 20, 0xA8, 0x00, 0x00);
-    desktop.AddChild(&win1);
-    Window win2(&desktop, 40, 15, 30, 30, 0x00, 0xA8, 0x00);
-    desktop.AddChild(&win2);
-    #endif
-    
-    #ifdef GRAPHICS_MODE
-    KeyboardDriver keyboard(&interrupts, &desktop);
-    #else
-    KeyboardEventHandler kbhandler;
-    KeyboardDriver keyboard(&interrupts, &kbhandler);
-    #endif
-    drvManager.AddDriver(&keyboard);
 
     interrupts.Activate();
     
-    // printf("Checking which elf modules are loaded:\n");
+    printf("Checking which elf modules are loaded:\n");
     multiboot_module_t* elf_modules = (multiboot_module_t*) multiboot_structure -> mods_addr;
-    // for(int i = 0; i < multiboot_structure -> mods_count; i++) {
-    //     printf("\t");
-    //     printf((const char*)elf_modules[i].string);
-    //     printf("\n");
-    // }
+    for(int i = 0; i < multiboot_structure -> mods_count; i++) {
+        printf("\t");
+        printf((const char*)elf_modules[i].string);
+        printf("\n");
+    }
 
-    // printf("Setting Up Ramdisk.\n");
-    uint32_t initrd_location = *((uint32_t*)multiboot_structure->mods_addr);
-    uint32_t initrd_end = *(uint32_t*)(multiboot_structure->mods_addr+4);
-    /* There is a risk of this being overwritten, in which case we should think about
-    moving the heap to ensure that it doesn't intersect this. */
-    fs_root = initialize_initrd(initrd_location);
+    // // printf("Setting Up Ramdisk.\n");
+    // uint32_t initrd_location = *((uint32_t*)multiboot_structure->mods_addr);
+    // uint32_t initrd_end = *(uint32_t*)(multiboot_structure->mods_addr+4);
+    // /* There is a risk of this being overwritten, in which case we should think about
+    // moving the heap to ensure that it doesn't intersect this. */
+    // fs_root = initialize_initrd(initrd_location);
 
     // int i = 0;
     // struct dirent* node = 0;
@@ -246,33 +238,30 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     //     printf("\n");
     //     ++i;
     // }
-    // printf("\n");
 
-    // printf("Waiting...\n");
-    // system_clock.wait(1);
-    // printf("Done!\n");
-
-    // printf("Testing syscalls...\n");
-    // syscalls._printf("Syscall print!\n");
-
-    // system_clock.wait(3);
-
-    jackos::filesystem::elf::Elf_File elf_file((Elf_Ehdr*)elf_modules[1].mod_start);
-    if(!elf_file.check_file()) {
+    printf("Loading program.\n");
+    jackos::filesystem::elf::Elf_File hello_program((Elf_Ehdr*)elf_modules[0].mod_start);
+    if(!hello_program.check_file()) {
         printf("Invalid ELF file.\n");
-        for(;;);
     }
-    elf_file.header_dump();
-    elf_file.phdr_dump();
-    printf("Attempting to run.\n");
-    system_clock.wait(1);
-    elf_file.run();
-    printf("Ran!\n");
+    else {
+        hello_program.run();
+    }
+
+    #ifdef GRAPHICS_MODE
+    printf("Switching to graphics mode.\n");
+    system_clock.wait(10);
+
+    vga.SetMode(SCREEN_WIDTH, SCREEN_HEIGHT, COLOR_DEPTH);
+
+    // Window win1(&desktop, 10, 10, 20, 20, 0xA8, 0x00, 0x00);
+    // desktop.AddChild(&win1);
+    #endif
 
     for(;;) { // Infinite loop
         #ifdef GRAPHICS_MODE
         desktop.Draw(&vga);
-        vga.DrawFrame(320, 200);
+        vga.DrawFrame(SCREEN_WIDTH, SCREEN_HEIGHT);
         #endif
     }
 }

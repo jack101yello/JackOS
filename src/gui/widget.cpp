@@ -12,14 +12,14 @@ uint8_t g,
 uint8_t b)
 : KeyboardEventHandler()
 {
-this -> x = x;
-this -> y = y;
-this -> w = w;
-this -> h = h;
-this -> r = r;
-this -> g = g;
-this -> b = b;
-this -> Focusable = true;
+    this -> x = x;
+    this -> y = y;
+    this -> w = w;
+    this -> h = h;
+    this -> r = r;
+    this -> g = g;
+    this -> b = b;
+    this -> Focusable = true;
 }
 
 Widget::~Widget() {

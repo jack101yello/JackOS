@@ -28,7 +28,7 @@ uint32_t PITEventHandler::internal_wait(uint32_t start_time, uint32_t duration) 
 
 // Waits for duration, in seconds
 uint32_t PITEventHandler::wait(uint32_t duration) {
-    return internal_wait(increment, duration*20);
+    return internal_wait(increment, duration);
 }
 
 PITDriver::PITDriver(InterruptManager* manager, PITEventHandler* handler) : InterruptHandler(0x20, manager) {
