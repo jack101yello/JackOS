@@ -65,7 +65,7 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp) {
         case 0x0B: if(Shift) handler->OnKeyDown(')'); else handler->OnKeyDown('0'); break;
         case 0x0C: if(Shift) handler->OnKeyDown('_'); else handler->OnKeyDown('-'); break;
         case 0x0D: if(Shift) handler->OnKeyDown('+'); else handler->OnKeyDown('='); break;
-        case 0x0E: break; // Backspace
+        case 0x0E: handler -> OnKeyDown(0x0E); break; // Backspace
         case 0x0F: handler->OnKeyDown('\t'); break;
         case 0x10: if(Shift) handler->OnKeyDown('Q'); else handler->OnKeyDown('q'); break;
         case 0x11: if(Shift) handler->OnKeyDown('W'); else handler->OnKeyDown('w'); break;

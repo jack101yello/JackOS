@@ -17,12 +17,12 @@ Desktop::~Desktop() {
 
 void Desktop::Draw(GraphicsContext* gc) {
     CompositeWidget::Draw(gc);
-    for(int i = 0; i < 4; i++) { // Cursor
-        gc -> PutPixel(MouseX+i, MouseY, 0xFF, 0xFF, 0xFF);
-        gc -> PutPixel(MouseX-i, MouseY, 0xFF, 0xFF, 0xFF);
-        gc -> PutPixel(MouseX, MouseY+i, 0xFF, 0xFF, 0xFF);
-        gc -> PutPixel(MouseX, MouseY-i, 0xFF, 0xFF, 0xFF);
-    }
+    // for(int i = 0; i < 4; i++) { // Cursor
+    //     gc -> PutPixel(MouseX+i, MouseY, 0xFF, 0xFF, 0xFF);
+    //     gc -> PutPixel(MouseX-i, MouseY, 0xFF, 0xFF, 0xFF);
+    //     gc -> PutPixel(MouseX, MouseY+i, 0xFF, 0xFF, 0xFF);
+    //     gc -> PutPixel(MouseX, MouseY-i, 0xFF, 0xFF, 0xFF);
+    // }
 }
 
 void Desktop::OnMouseDown(uint8_t button) {

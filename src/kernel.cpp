@@ -18,6 +18,7 @@
 #include <libc/libc.h>
 #include <filesystem/ELF/elfloader.h>
 #include <common/common.h>
+#include <terminal/terminal.h>
 
 using namespace jackos;
 using namespace jackos::common;
@@ -161,7 +162,6 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     
     printf("Setting up Interrupt Descriptor table (IDT).\n");
     InterruptManager interrupts(0x20, &gdt, &taskManager);
-
     
     printf("Setting up syscalls.\n");
     SyscallHandler syscalls(&interrupts, 0x80);
@@ -175,14 +175,6 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     printf("Instantiating Desktop.\n");
     Desktop desktop(SCREEN_WIDTH, SCREEN_HEIGHT, 0x00, 0x00, 0x00);
 
-    printf("Setting up drivers...\n");
-
-    printf("\tInitiating mouse.\n");
-    MouseDriver mouse(&interrupts, &desktop);
-    drvManager.AddDriver(&mouse);
-    printf("\tInitiating keyboard.\n");
-    KeyboardDriver keyboard(&interrupts, &desktop);
-    drvManager.AddDriver(&keyboard);
     #else
     printf("Setting up drivers...\n");
 
@@ -253,6 +245,11 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     system_clock.wait(10);
 
     vga.SetMode(SCREEN_WIDTH, SCREEN_HEIGHT, COLOR_DEPTH);
+    
+    jackos::terminal::Terminal terminal(&vga, &system_clock);
+    KeyboardDriver keyboard_driver(&interrupts, &terminal);
+    drvManager.ActivateAll();
+    // drvManager.AddDriver(&keyboard_driver);
 
     // Window win1(&desktop, 10, 10, 20, 20, 0xA8, 0x00, 0x00);
     // desktop.AddChild(&win1);
@@ -261,6 +258,9 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     for(;;) { // Infinite loop
         #ifdef GRAPHICS_MODE
         desktop.Draw(&vga);
+
+        terminal.draw();
+
         vga.DrawFrame(SCREEN_WIDTH, SCREEN_HEIGHT);
         #endif
     }

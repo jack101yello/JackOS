@@ -25,6 +25,7 @@ objects = obj/loader.o \
 		  obj/filesystem/vfs.o \
 		  obj/filesystem/initrd.o \
 		  obj/filesystem/ELF/elfloader.o \
+		  obj/terminal/terminal.o \
 		  obj/libc/libc.o \
 		  obj/common/common.o \
 		  obj/kernel.o

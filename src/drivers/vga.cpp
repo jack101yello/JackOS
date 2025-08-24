@@ -152,13 +152,13 @@ bool VideoGraphicsArray::SetMode(uint32_t width, uint32_t height, uint32_t color
     return true;
 }
 
-uint8_t VideoGraphicsArray::GetColorIndex(uint8_t r, uint8_t g, uint8_t b) {
-    if(r == 0x00 && g == 0x00 && b == 0x00) return 0x00; // Black
-    if(r == 0x00 && g == 0x00 && b == 0xA8) return 0x01; // Blue
-    if(r == 0x00 && g == 0xA8 && b == 0x00) return 0x02; // Green
-    if(r == 0xA8 && g == 0x00 && b == 0x00) return 0x03; // Red
-    if(r == 0xFF && g == 0xFF && b == 0xFF) return 0x3F; // White
-    return 0x00; // Black
+jackos::drivers::COLOR_CODE VideoGraphicsArray::GetColorIndex(uint8_t r, uint8_t g, uint8_t b) {
+    if(r == 0x00 && g == 0x00 && b == 0x00) return BLACK; // Black
+    if(r == 0x00 && g == 0x00 && b == 0xA8) return BLUE; // Blue
+    if(r == 0x00 && g == 0xA8 && b == 0x00) return GREEN; // Green
+    if(r == 0xA8 && g == 0x00 && b == 0x00) return RED; // Red
+    if(r == 0xFF && g == 0xFF && b == 0xFF) return WHITE; // White
+    return BLACK; // Black
 }
 
 void VideoGraphicsArray::PutPixel(int32_t x, int32_t y, uint8_t r, uint8_t g, uint8_t b) {
@@ -177,13 +177,18 @@ uint8_t* VideoGraphicsArray::GetFrameBufferSegment() {
     }
 }
 
-void VideoGraphicsArray::PutPixel(int32_t x, int32_t y, uint8_t colorIndex) {
+void VideoGraphicsArray::PutPixel(int32_t x, int32_t y, COLOR_CODE color) {
     if(x < 0 || SCREEN_WIDTH <= x || y < 0 || SCREEN_HEIGHT <= y) return;
-    framebuffer[x][y] = colorIndex;
+    framebuffer[x][y] = color;
 }
 
-void printf(const char* str);
-void printfhex(int val);
+void VideoGraphicsArray::FillRectangle(uint32_t x, uint32_t y, uint32_t w, uint32_t h, COLOR_CODE color) {
+    for(int32_t Y = y; Y < h+y; Y++) {
+        for(int32_t X = x; X < w+x; X++) {
+            PutPixel(X, Y, color);
+        }
+    }
+}
 
 void VideoGraphicsArray::FillRectangle(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t r, uint8_t g, uint8_t b) {
     for(int32_t Y = y; Y < h+y; Y++) {
@@ -202,13 +207,13 @@ void VideoGraphicsArray::DrawFrame(uint32_t width, uint32_t height) {
     }
 }
 
-void VideoGraphicsArray::Print(const char* message, jackos::common::uint32_t x, jackos::common::uint32_t y) {
+void VideoGraphicsArray::Print(const char* message, jackos::common::uint32_t x, jackos::common::uint32_t y, jackos::drivers::COLOR_CODE color) {
     for(int i = 0; message[i] != '\0'; i++) {
-        DrawCharacter(message[i], x+9*i, y);
+        DrawCharacter(message[i], x+9*i, y, color);
     }
 }
 
-void VideoGraphicsArray::DrawCharacter(const char character, jackos::common::uint32_t x, jackos::common::uint32_t y) {
+void VideoGraphicsArray::DrawCharacter(const char character, jackos::common::uint32_t x, jackos::common::uint32_t y, jackos::drivers::COLOR_CODE color) {
     int bitmap[144];
     switch(character) {
 case '': {
@@ -2670,6 +2675,26 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
     }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+case '\b': {
+    int bitmap_temp[] = {
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1,
+    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    break;
 
 default:
     int bitmap_temp[] =  {
@@ -2696,7 +2721,7 @@ default:
     for(int pixy = 0; pixy < 16; pixy++) {
         for(int pixx = 0; pixx < 9; pixx++) {
             if(bitmap[pixx + 9*pixy] == 1) {
-                PutPixel(x+pixx, y+pixy, 0xFF, 0xFF, 0xFF);
+                PutPixel(x+pixx, y+pixy, color);
             }
         }
     }
