@@ -19,6 +19,7 @@
 #include <filesystem/ELF/elfloader.h>
 #include <common/common.h>
 #include <terminal/terminal.h>
+#include <drivers/floppy.h>
 
 using namespace jackos;
 using namespace jackos::common;
@@ -127,7 +128,7 @@ extern "C" void callConstructors() {
 
 extern "C" void* heap;
 
-#define GRAPHICS_MODE
+// #define GRAPHICS_MODE
 
 void breakpoint() {
     printf("");
@@ -136,9 +137,9 @@ void breakpoint() {
 extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magicnumber) {
     clear_screen();
 
-    printf("Initializing JackOS Kernel\n");
+    // printf("Initializing JackOS Kernel\n");
 
-    printf("Setting up Global Descriptor Table (GDT).\n");
+    // printf("Setting up Global Descriptor Table (GDT).\n");
     GlobalDescriptorTable gdt;
 
     uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
@@ -160,10 +161,10 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
 
     TaskManager taskManager;
     
-    printf("Setting up Interrupt Descriptor table (IDT).\n");
+    // printf("Setting up Interrupt Descriptor table (IDT).\n");
     InterruptManager interrupts(0x20, &gdt, &taskManager);
     
-    printf("Setting up syscalls.\n");
+    // printf("Setting up syscalls.\n");
     SyscallHandler syscalls(&interrupts, 0x80);
 
 
@@ -176,40 +177,44 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     Desktop desktop(SCREEN_WIDTH, SCREEN_HEIGHT, 0x00, 0x00, 0x00);
 
     #else
-    printf("Setting up drivers...\n");
+    // printf("Setting up drivers...\n");
 
-    printf("\tInitiating mouse.\n");
+    // printf("\tInitiating mouse.\n");
     MouseToConsole mhandler;
     MouseToConsole mousehandler;
     MouseDriver mouse(&interrupts, &mousehandler);
     drvManager.AddDriver(&mouse);
-    printf("\tInitiating keyboard.\n");
+    // printf("\tInitiating keyboard.\n");
     KeyboardEventHandler kbhandler;
     KeyboardDriver keyboard(&interrupts, &kbhandler);
     drvManager.AddDriver(&keyboard);
     #endif
 
-    printf("\tInitiating PIT.\n");
+    // printf("\tInitiating PIT.\n");
     PITEventHandler system_clock;
     PITDriver pit_driver(&interrupts, &system_clock);
     drvManager.AddDriver(&pit_driver);
 
-    printf("Initializing Peripheral Component Interconnect (PCI).\n");
+    // printf("Initializing Peripheral Component Interconnect (PCI).\n");
     PCIController pcicontroller;
     pcicontroller.SelectDrivers(&drvManager, &interrupts);
 
-    printf("Activating drivers.\n");
+    printf("Initializing Floppy Disk.\n");
+    FloppyDriver floppy_driver(&interrupts, &system_clock);
+    drvManager.AddDriver(&floppy_driver);
+
+    // printf("Activating drivers.\n");
     drvManager.ActivateAll();
 
     interrupts.Activate();
     
-    printf("Checking which elf modules are loaded:\n");
-    multiboot_module_t* elf_modules = (multiboot_module_t*) multiboot_structure -> mods_addr;
-    for(int i = 0; i < multiboot_structure -> mods_count; i++) {
-        printf("\t");
-        printf((const char*)elf_modules[i].string);
-        printf("\n");
-    }
+    // printf("Checking which elf modules are loaded:\n");
+    // multiboot_module_t* elf_modules = (multiboot_module_t*) multiboot_structure -> mods_addr;
+    // for(int i = 0; i < multiboot_structure -> mods_count; i++) {
+    //     printf("\t");
+    //     printf((const char*)elf_modules[i].string);
+    //     printf("\n");
+    // }
 
     // // printf("Setting Up Ramdisk.\n");
     // uint32_t initrd_location = *((uint32_t*)multiboot_structure->mods_addr);
@@ -231,14 +236,33 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     //     ++i;
     // }
 
-    printf("Loading program.\n");
-    jackos::filesystem::elf::Elf_File hello_program((Elf_Ehdr*)elf_modules[0].mod_start);
-    if(!hello_program.check_file()) {
-        printf("Invalid ELF file.\n");
+    // printf("Loading program.\n");
+    // jackos::filesystem::elf::Elf_File hello_program((Elf_Ehdr*)elf_modules[0].mod_start);
+    // if(!hello_program.check_file()) {
+    //     printf("Invalid ELF file.\n");
+    // }
+    // else {
+    //     hello_program.run();
+    // }
+
+    // jackos::filesystem::elf::Elf_File p1((Elf_Ehdr*)elf_modules[0].mod_start);
+    // jackos::filesystem::elf::Elf_File p2((Elf_Ehdr*)elf_modules[1].mod_start);
+    // p1.run();
+    // p2.run();
+
+    // printf("Initiating floppy test...\n");
+    if(floppy_driver.floppy_reset(FLOPPY_BASE) == 0) {
+        printf("Floppy reset and calibrated.\n");
     }
     else {
-        hello_program.run();
+        printf("There was an issue calibrating the floppy...\n");
+        for(;;);
     }
+
+    floppy_driver.dma_init(DIR_READ);
+    floppy_driver.do_track(FLOPPY_BASE, 0, DIR_READ);
+    floppy_driver.ParseFATHeader();
+    floppy_driver.read_root_directory();
 
     #ifdef GRAPHICS_MODE
     printf("Switching to graphics mode.\n");

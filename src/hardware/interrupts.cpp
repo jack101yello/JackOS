@@ -79,24 +79,24 @@ picSlaveData(0xA1)
     SetInterruptDescriptorTableEntry(0x12, CodeSegment, &HandleException0x12, 0, IDT_INTERRUPT_GATE);
     SetInterruptDescriptorTableEntry(0x13, CodeSegment, &HandleException0x13, 0, IDT_INTERRUPT_GATE);
 
-    SetInterruptDescriptorTableEntry(hardwareoffset + 0x00, CodeSegment, &HandleInterruptRequest0x00, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(hardwareoffset + 0x01, CodeSegment, &HandleInterruptRequest0x01, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x00, CodeSegment, &HandleInterruptRequest0x00, 0, IDT_INTERRUPT_GATE); // PIT
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x01, CodeSegment, &HandleInterruptRequest0x01, 0, IDT_INTERRUPT_GATE); // PS/2 Keyboard
     SetInterruptDescriptorTableEntry(hardwareoffset + 0x02, CodeSegment, &HandleInterruptRequest0x02, 0, IDT_INTERRUPT_GATE);
     SetInterruptDescriptorTableEntry(hardwareoffset + 0x03, CodeSegment, &HandleInterruptRequest0x03, 0, IDT_INTERRUPT_GATE);
     SetInterruptDescriptorTableEntry(hardwareoffset + 0x04, CodeSegment, &HandleInterruptRequest0x04, 0, IDT_INTERRUPT_GATE);
     SetInterruptDescriptorTableEntry(hardwareoffset + 0x05, CodeSegment, &HandleInterruptRequest0x05, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(hardwareoffset + 0x06, CodeSegment, &HandleInterruptRequest0x06, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x06, CodeSegment, &HandleInterruptRequest0x06, 0, IDT_INTERRUPT_GATE); // Floppy disk
     SetInterruptDescriptorTableEntry(hardwareoffset + 0x07, CodeSegment, &HandleInterruptRequest0x07, 0, IDT_INTERRUPT_GATE);
     SetInterruptDescriptorTableEntry(hardwareoffset + 0x08, CodeSegment, &HandleInterruptRequest0x08, 0, IDT_INTERRUPT_GATE);
     SetInterruptDescriptorTableEntry(hardwareoffset + 0x09, CodeSegment, &HandleInterruptRequest0x09, 0, IDT_INTERRUPT_GATE);
     SetInterruptDescriptorTableEntry(hardwareoffset + 0x0A, CodeSegment, &HandleInterruptRequest0x0A, 0, IDT_INTERRUPT_GATE);
     SetInterruptDescriptorTableEntry(hardwareoffset + 0x0B, CodeSegment, &HandleInterruptRequest0x0B, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(hardwareoffset + 0x0C, CodeSegment, &HandleInterruptRequest0x0C, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x0C, CodeSegment, &HandleInterruptRequest0x0C, 0, IDT_INTERRUPT_GATE); // PS/2 Mouse
     SetInterruptDescriptorTableEntry(hardwareoffset + 0x0D, CodeSegment, &HandleInterruptRequest0x0D, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(hardwareoffset + 0x0E, CodeSegment, &HandleInterruptRequest0x0E, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(hardwareoffset + 0x0F, CodeSegment, &HandleInterruptRequest0x0F, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x0E, CodeSegment, &HandleInterruptRequest0x0E, 0, IDT_INTERRUPT_GATE); // Primary ATA channel
+    SetInterruptDescriptorTableEntry(hardwareoffset + 0x0F, CodeSegment, &HandleInterruptRequest0x0F, 0, IDT_INTERRUPT_GATE); // Secondary ATA channel
 
-    SetInterruptDescriptorTableEntry(0x80, CodeSegment, &HandleInterruptRequest0x80, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x80, CodeSegment, &HandleInterruptRequest0x80, 0, IDT_INTERRUPT_GATE); // Syscalls
 
     picMasterCommand.Write(0x11);
     picSlaveCommand.Write(0x11);
@@ -143,6 +143,7 @@ uint32_t InterruptManager::handleInterrupt(uint8_t interruptNumber, uint32_t esp
 }
 
 void kpanic(uint8_t interruptNumber, uint32_t esp) {
+    // Need to adapt this for graphics mode. Some sort of a bluescreen would suffice.
     switch(interruptNumber) { // Check for exceptions
         case 0x00: printf("\n/// Exception 0x00: Single-step interrupt.\n"); break; // Single-step interrupt
         case 0x02: printf("\n/// Exception 0x02: Non-maskable interrupt (NMI).\n"); break; // Non-maskable interrupt (NMI)

@@ -26,6 +26,7 @@ objects = obj/loader.o \
 		  obj/filesystem/initrd.o \
 		  obj/filesystem/ELF/elfloader.o \
 		  obj/terminal/terminal.o \
+		  obj/drivers/floppy.o \
 		  obj/libc/libc.o \
 		  obj/common/common.o \
 		  obj/kernel.o
@@ -65,11 +66,14 @@ jackos.iso: jackoskernel.bin initrd.elf
 	mkdir -p isodir/boot/grub
 	cp $< isodir/boot/jackoskernel.bin
 	cp initrd.elf isodir/boot/initrd.elf
-	cp ~/JackOSPrograms/hello.elf isodir/boot/hello.elf
+	# cp ~/JackOSPrograms/hello.elf isodir/boot/hello.elf
+	cp ~/JackOSPrograms/Program1/program1.elf isodir/boot/program1.elf
+	cp ~/JackOSPrograms/Program2/program2.elf isodir/boot/program2.elf
 	echo 'menuentry "JackOS" {' > isodir/boot/grub/grub.cfg
 	echo '	multiboot /boot/jackoskernel.bin' >> isodir/boot/grub/grub.cfg
 	# echo '	module /boot/initrd.elf initrd.elf' >> isodir/boot/grub/grub.cfg
-	echo '	module /boot/hello.elf hello.elf' >> isodir/boot/grub/grub.cfg
+	echo '	module /boot/program1.elf program1' >> isodir/boot/grub/grub.cfg
+	echo '	module /boot/program2.elf program2' >> isodir/boot/grub/grub.cfg
 	echo '}' >> isodir/boot/grub/grub.cfg
 	grub-mkrescue -o jackos.iso isodir
 

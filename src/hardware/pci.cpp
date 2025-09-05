@@ -119,7 +119,7 @@ Driver* PCIController::GetDriver(PCIDeviceDescriptor dev_desc, InterruptManager*
         case 0x1022: // AMD
             switch(dev_desc.device_id) {
                 case 0x2000: // am79c973
-                    printf("AMD 79c973");
+                    // printf("AMD 79c973");
                     break;
             }
             break;
