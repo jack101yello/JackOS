@@ -1,6 +1,8 @@
 #ifndef __jackos_filesystem_fat12_H
 #define __jackos_filesystem_fat12_H
 
+#define DATA_AREA_START 33 // 1 boot, 9*2 FAT, 14 root
+
 #include <common/types.h>
 
 namespace jackos {

@@ -51,6 +51,8 @@ namespace jackos {
                 int motor_state;
                 char dmabuf[FLOPPY_DMA_LEN] __attribute__((aligned(0x8000)));
                 jackos::filesystem::FAT12Header* fatheader;
+                jackos::filesystem::FAT12DirectoryEntry file;
+                jackos::common::uint8_t fat[FAT_SIZE];
 
             public:
                 FloppyDriver(jackos::hardware::InterruptManager* manager, jackos::drivers::PITEventHandler* i_system_clock);
@@ -65,12 +67,16 @@ namespace jackos {
                 void motor_kill(int base);
                 int seek(int base, unsigned cyli, int head);
                 void dma_init(floppy_dir dir);
-                int do_track(int base, unsigned cyl, floppy_dir dir);
-                int read_track(int base, unsigned cyl) { return do_track(base, cyl, DIR_READ); }
-                int write_track(int base, unsigned cyl) { return do_track(base, cyl, DIR_WRITE); }
+                int do_track(int base, unsigned logical_sector, floppy_dir dir);
+                int read_track(int base, unsigned logical_sector) { return do_track(base, logical_sector, DIR_READ); }
+                int write_track(int base, unsigned logical_sector) { return do_track(base, logical_sector, DIR_WRITE); }
                 char dma_elem(int index) { return (index >= 0 && index < FLOPPY_DMA_LEN) ? dmabuf[index] : (char)0; }
                 void ParseFATHeader() { fatheader = (jackos::filesystem::FAT12Header*) dmabuf; }
                 void read_root_directory();
+                void load_file(jackos::common::uint16_t start_cluster, jackos::common::uint32_t size, jackos::common::uint8_t* destination);
+                jackos::filesystem::FAT12DirectoryEntry get_file() { return file; }
+                jackos::common::uint16_t fat12_get_entry(jackos::common::uint16_t cluster);
+                jackos::common::uint8_t* get_fat() { return fat; }
         };
     }
 }

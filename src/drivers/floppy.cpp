@@ -158,7 +158,6 @@ void FloppyDriver::motor_kill(int base) {
 }
 
 int FloppyDriver::seek(int base, unsigned cyli, int head) {
-    printf("Attempting floppy seek.\n");
     int i, st0, cyl = -1; // Bogus cylinder
     motor(base, MOTOR_ON);
     for(int i = 0; i < 10; i++) {
@@ -179,7 +178,6 @@ int FloppyDriver::seek(int base, unsigned cyli, int head) {
         }
 
         if(cyl == cyli) {
-            printf("Valid seek.\n");
             motor(base, MOTOR_OFF);
             return 0;
         }
@@ -190,7 +188,7 @@ int FloppyDriver::seek(int base, unsigned cyli, int head) {
 }
 
 void FloppyDriver::dma_init(floppy_dir dir) {
-    printf("Initializing DMA\n");
+    // printf("Initializing DMA\n");
     union {
         unsigned char b[4]; // 4 bytes
         unsigned long l; // 32-bit
@@ -227,18 +225,12 @@ void FloppyDriver::dma_init(floppy_dir dir) {
     Count.Write(c.b[1]); // High byte
     Set_Mode.Write(mode);
     Channel2.Write(0x02); // Unmask
-
-    printf("DMA dump:");
-    for(int i = 0; i < 16; i++) {
-        printfhex(dmabuf[i]); printf(" ");
-    }
-    printf("\n");
-    printf("DMA addr: ");
-    printaddr((uint32_t)&dmabuf);
-    printf("\n");
 }
 
-int FloppyDriver::do_track(int base, unsigned cyl, floppy_dir dir) {
+int FloppyDriver::do_track(int base, unsigned logical_sector, floppy_dir dir) {
+    int sector = (logical_sector % 18) + 1;
+    int head = (logical_sector / 18) % 2;
+    int cyl = logical_sector / 36;
     unsigned char cmd;
 
     static const int flags = 0xC0;
@@ -254,32 +246,27 @@ int FloppyDriver::do_track(int base, unsigned cyl, floppy_dir dir) {
             return 0;
     }
 
-
-    // Seek both heads
-    if(seek(base, cyl, 0)) return -1;
-    if(seek(base, cyl, 1)) return -1;
+    if(seek(base, cyl, head)) return -1;
 
     for(int i = 0; i < 20; i++) {
-        printf("Firing motor\n");
+        // printf("Firing motor\n");
         motor(base, MOTOR_ON);
         dma_init(dir);
-        system_clock -> wait(100); // Give some time to settle after seeking
-        printf("Attempting read\n");
+        system_clock -> wait(1); // Give some time to settle after seeking
+        // printf("Attempting read\n");
 
         freeze = true;
         write_cmd(base, cmd); // Set above for current direction
-        write_cmd(base, 0); // Head and drive
+        write_cmd(base, (head << 2) | 0); // Head and drive
         write_cmd(base, cyl); // Cylinder
-        write_cmd(base, 0); // First head
-        write_cmd(base, 1); // First sector (they cound from 1)
+        write_cmd(base, head); // First head
+        write_cmd(base, sector); // First sector (they count from 1)
         write_cmd(base, 2); // Bytes per sector, 128*2^x => 512
         write_cmd(base, 18); // Number of tracks
         write_cmd(base, 0x1B); // GAP3 length; this is default for 3.5"
         write_cmd(base, 0xFF); // Data lengths
 
-        printf("Checking for IRQ 6\n");
         while(freeze); // Wait for IRQ 6
-        printf("IRQ found. Getting information.\n");
 
         unsigned char st0, st1, st2, rcy, rhe, rse, bps;
         st0 = read_data(base); // Status information
@@ -289,22 +276,6 @@ int FloppyDriver::do_track(int base, unsigned cyl, floppy_dir dir) {
         rhe = read_data(base); // Head
         rse = read_data(base); // Sector
         bps = read_data(base); // Bytes per sector
-
-        printf("st0: ");
-        printfhex(st0);
-        printf("\nst1: ");
-        printfhex(st1);
-        printf("\nst2: ");
-        printfhex(st2);
-        printf("\nrcy: ");
-        printfhex(rcy);
-        printf("\nrhe: ");
-        printfhex(rhe);
-        printf("\nrse: ");
-        printfhex(rse);
-        printf("\nbps: ");
-        printfhex(bps);
-        printf("\n");
         
         int error = 0;
         if(st0 & 0xC0) {
@@ -388,8 +359,6 @@ int FloppyDriver::do_track(int base, unsigned cyl, floppy_dir dir) {
 }
 
 void FloppyDriver::read_root_directory() {
-    uint8_t fat[FAT_SIZE];
-
     // Read the first 9 sectors to fill FAT
     for(int i = 0; i < 9; i++) {
         int sector = i+1;
@@ -404,17 +373,17 @@ void FloppyDriver::read_root_directory() {
     
     // Read the 14 sectors starting from sector 19 (the root directory)
     for(int i = 0; i < 14; i++) {
-        int sector = 19 + i;
-        int track = sector / 18;
-        int cyl = track;
+        int logical_sector = 19+i;
 
-        do_track(FLOPPY_BASE, cyl, DIR_READ);
+        do_track(FLOPPY_BASE, logical_sector, DIR_READ);
         memcpy(root_dir_sector_buffer + i*512, (uint8_t*)dmabuf, 512);
     }
 
     jackos::filesystem::FAT12DirectoryEntry* entries = (jackos::filesystem::FAT12DirectoryEntry*)root_dir_sector_buffer;
 
     for(int i = 0; i < 224; i++) {
+        printfhex(i);
+        system_clock -> wait(1);
         if(entries[i].name[0] == 0x00) break; // No more entries
         if(entries[i].name[0] == 0xE5) continue; // Deleted
         if(entries[i].attributes == 0x0F) continue; // Long file name entry
@@ -436,5 +405,56 @@ void FloppyDriver::read_root_directory() {
         printf("\nOf size ");
         printaddr(entries[i].fileSize);
         printf(" bytes.\n");
+
+        file = entries[i];
     }
+}
+
+void FloppyDriver::load_file(uint16_t start_cluster, uint32_t size, uint8_t* destination) {
+    uint16_t cluster = start_cluster;
+    uint32_t bytes_read = 0;
+
+    while(cluster >= 0x002 && cluster <= 0xFEF && bytes_read < size) {
+        int logical_sector = DATA_AREA_START + (cluster - 2);
+
+        // Read the sector into the DMA buffer
+        if(do_track(FLOPPY_BASE, logical_sector, DIR_READ) != 0) {
+            printf("Failed to read cluster ");
+            printfhex(cluster);
+            printf("\n");
+            break;
+        }
+
+        uint32_t copy_size = 512;
+        if(bytes_read + copy_size > size) {
+            copy_size = size - bytes_read;
+        }
+        memcpy(destination + bytes_read, (uint8_t*)dmabuf, copy_size);
+        bytes_read += copy_size;
+
+        cluster = fat12_get_entry(cluster);
+    }
+
+    if(bytes_read < size) {
+        printf("Warning: only read ");
+        printaddr(bytes_read);
+        printf(" bytes out of ");
+        printaddr(size);
+        printf("\n");
+    }
+    else {
+        printf("File loaded: ");
+        printaddr(bytes_read);
+        printf(" bytes.\n");
+    }
+}
+
+uint16_t FloppyDriver::fat12_get_entry(uint16_t cluster) {
+    uint16_t offset = (cluster * 3) / 2;
+    uint16_t value;
+
+    if(cluster & 1) {
+        return ((fat[offset] >> 4) | (fat[offset + 1] << 4)) & 0x0FFF;
+    }
+    return (fat[offset] | ((fat[offset + 1] & 0x0F) << 8)) & 0x0FFF;
 }
