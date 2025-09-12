@@ -128,7 +128,7 @@ extern "C" void callConstructors() {
 
 extern "C" void* heap;
 
-// #define GRAPHICS_MODE
+#define GRAPHICS_MODE
 
 void breakpoint() {
     printf("");
@@ -163,10 +163,6 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     
     printf("Setting up Interrupt Descriptor table (IDT).\n");
     InterruptManager interrupts(0x20, &gdt, &taskManager);
-    
-    printf("Setting up syscalls.\n");
-    SyscallHandler syscalls(&interrupts, 0x80);
-
 
     DriverManager drvManager;
     #ifdef GRAPHICS_MODE
@@ -250,26 +246,26 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     // p1.run();
     // p2.run();
 
-    printf("Initiating floppy test...\n");
-    if(floppy_driver.floppy_reset(FLOPPY_BASE) == 0) {
-        printf("Floppy reset and calibrated.\n");
-    }
-    else {
-        printf("There was an issue calibrating the floppy...\n");
-        for(;;);
-    }
+    // printf("Initiating floppy test...\n");
+    // if(floppy_driver.floppy_reset(FLOPPY_BASE) == 0) {
+    //     printf("Floppy reset and calibrated.\n");
+    // }
+    // else {
+    //     printf("There was an issue calibrating the floppy...\n");
+    //     for(;;);
+    // }
 
-    floppy_driver.dma_init(DIR_READ);
-    floppy_driver.do_track(FLOPPY_BASE, 0, DIR_READ);
-    floppy_driver.ParseFATHeader();
-    floppy_driver.read_root_directory();
+    // floppy_driver.dma_init(DIR_READ);
+    // floppy_driver.do_track(FLOPPY_BASE, 0, DIR_READ);
+    // floppy_driver.ParseFATHeader();
+    // floppy_driver.read_root_directory();
 
-    FAT12DirectoryEntry program_file = floppy_driver.get_file();
-    uint8_t* file = (uint8_t*)0x10000;
-    floppy_driver.load_file(program_file.firstCluster, program_file.fileSize, file);
-    jackos::filesystem::elf::Elf_File loaded_program((Elf_Ehdr*)file);
-    loaded_program.header_dump();
-    loaded_program.run();
+    // FAT12DirectoryEntry program_file = floppy_driver.get_file();
+    // uint8_t* file = (uint8_t*)0x10000;
+    // floppy_driver.load_file(program_file.firstCluster, program_file.fileSize, file);
+    // jackos::filesystem::elf::Elf_File loaded_program((Elf_Ehdr*)file);
+    // loaded_program.header_dump();
+    // loaded_program.run();
 
     #ifdef GRAPHICS_MODE
     printf("Switching to graphics mode.\n");
@@ -277,13 +273,20 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
 
     vga.SetMode(SCREEN_WIDTH, SCREEN_HEIGHT, COLOR_DEPTH);
     
-    jackos::terminal::Terminal terminal(&vga, &system_clock);
+    jackos::terminal::Terminal terminal(&vga, &system_clock, multiboot_structure);
     KeyboardDriver keyboard_driver(&interrupts, &terminal);
     drvManager.ActivateAll();
     // drvManager.AddDriver(&keyboard_driver);
 
     // Window win1(&desktop, 10, 10, 20, 20, 0xA8, 0x00, 0x00);
     // desktop.AddChild(&win1);
+    #endif
+
+    #ifdef GRAPHICS_MODE
+    SyscallHandler syscalls(&interrupts, 0x80, &vga, &terminal);
+    #else
+    printf("Setting up syscalls.\n");
+    SyscallHandler syscalls(&interrupts, 0x80);
     #endif
 
     for(;;) { // Infinite loop

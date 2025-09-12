@@ -1,3 +1,6 @@
+#ifndef multiboot_header
+#define multiboot_header
+
 #include <common/types.h>
 
 #define MULTIBOOT_FLAG_MEM     0x001
@@ -50,3 +53,5 @@ struct multiboot_mod_list {
 };
 
 typedef struct multiboot_mod_list multiboot_module_t;
+
+#endif

@@ -7,6 +7,9 @@
 #include <drivers/pit.h>
 #include <gdt.h>
 #include <libc/libc.h>
+#include <multiboot.h>
+#include <filesystem/ELF/elfheader.h>
+#include <filesystem/ELF/elfloader.h>
 
 #define TERMINAL_WIDTH 33
 #define TERMINAL_HEIGHT 11
@@ -25,9 +28,12 @@ namespace jackos {
                 void command_help(const char* message);
                 void command_clear();
                 void newline();
+                multiboot* mb;
+                void list_files();
+                void run_file();
             
             public:
-                Terminal(jackos::drivers::VideoGraphicsArray* i_graphics, jackos::drivers::PITEventHandler* i_system_clock);
+                Terminal(jackos::drivers::VideoGraphicsArray* i_graphics, jackos::drivers::PITEventHandler* i_system_clock, multiboot* i_mb);
                 void draw();
                 void OnKeyDown(char);
                 void parse_command();

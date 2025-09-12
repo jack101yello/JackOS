@@ -5,11 +5,12 @@ using namespace jackos::terminal;
 using namespace jackos::drivers;
 
 
-jackos::terminal::Terminal::Terminal(jackos::drivers::VideoGraphicsArray* i_graphics, PITEventHandler* i_system_clock) {
+jackos::terminal::Terminal::Terminal(jackos::drivers::VideoGraphicsArray* i_graphics, PITEventHandler* i_system_clock, multiboot* i_mb) {
     active = true;
     graphics = i_graphics;
     line_buffer[0] = '\0';
     system_clock = i_system_clock;
+    mb = i_mb;
     buffer_len = 0;
     x = 1;
     y = 0;
@@ -124,6 +125,12 @@ void Terminal::parse_command() {
     else if(jackos::libc::strcmp(argv[0], "clear") == 0) {
         command_clear();
     }
+    else if(jackos::libc::strcmp(argv[0], "list") == 0) {
+        list_files();
+    }
+    else if(jackos::libc::strcmp(argv[0], "run") == 0) {
+        run_file();
+    }
     else {
         print("Unknown command: ");
         print(argv[0]);
@@ -144,6 +151,22 @@ void Terminal::command_clear() {
     y = 0;
 }
 
+void Terminal::list_files() {
+    multiboot_module_t* elf_modules = (multiboot_module_t*) mb -> mods_addr;
+    for(int i = 0; i < mb -> mods_count; i++) {
+        print("\t");
+        print((const char*)elf_modules[i].string);
+        newline();
+    }
+}
+
+void Terminal::run_file() {
+    multiboot_module_t* elf_modules = (multiboot_module_t*) mb -> mods_addr;
+    jackos::filesystem::elf::Elf_File elf_program((Elf_Ehdr*)elf_modules[0].mod_start);
+    if(!elf_program.check_file()) return;
+    elf_program.run();
+}
+
 void Terminal::command_help(const char* argument) {
     if(jackos::libc::strcmp(argument, "") == 0) {
         print("Valid commands:\n");
@@ -155,6 +178,12 @@ void Terminal::command_help(const char* argument) {
     }
     else if(jackos::libc::strcmp(argument, "clear") == 0) {
         print("Clears the screen.\n");
+    }
+    else if(jackos::libc::strcmp(argument, "list") == 0) {
+        print("Lists the ELF modules in memory.\n");
+    }
+    else if(jackos::libc::strcmp(argument, "run") == 0) {
+        print("Runs the first ELF file in memory.\n");
     }
     else {
         print("Unknown command: ");
