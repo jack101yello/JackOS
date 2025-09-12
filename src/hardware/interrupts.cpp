@@ -38,7 +38,7 @@ void InterruptManager::SetInterruptDescriptorTableEntry(
     interruptDescriptorTable[interruptNumber].handlerAddressLowBits = ((uint32_t)handler) & 0xFFFF;
     interruptDescriptorTable[interruptNumber].handlerAddressHighBits = (((uint32_t)handler) >> 16) & 0xFFFF;
     interruptDescriptorTable[interruptNumber].gdt_codeSegmentSelector = codeSegmentSelectorOffset;
-    interruptDescriptorTable[interruptNumber].access = IDT_DESC_PRESENT | DescriptorType | (DescriptorPrivilegeLevel&3 << 5);
+    interruptDescriptorTable[interruptNumber].access = IDT_DESC_PRESENT | DescriptorType | ((DescriptorPrivilegeLevel&3) << 5);
     interruptDescriptorTable[interruptNumber].reserved = 0;
 }
 
@@ -52,6 +52,7 @@ picSlaveData(0xA1)
     this->hardwareoffset = hardwareoffset;
     uint16_t CodeSegment = gdt -> CodeSegmentSelector();
     const uint8_t IDT_INTERRUPT_GATE = 0xE;
+    const uint8_t IDT_TRAP_GATE = 0xF;
 
     for(uint16_t i = 0; i < 256; i++) {
         SetInterruptDescriptorTableEntry(i, CodeSegment, &IgnoreInterruptRequest, 0, IDT_INTERRUPT_GATE);
@@ -96,7 +97,7 @@ picSlaveData(0xA1)
     SetInterruptDescriptorTableEntry(hardwareoffset + 0x0E, CodeSegment, &HandleInterruptRequest0x0E, 0, IDT_INTERRUPT_GATE); // Primary ATA channel
     SetInterruptDescriptorTableEntry(hardwareoffset + 0x0F, CodeSegment, &HandleInterruptRequest0x0F, 0, IDT_INTERRUPT_GATE); // Secondary ATA channel
 
-    SetInterruptDescriptorTableEntry(0x80, CodeSegment, &HandleInterruptRequest0x80, 0, IDT_INTERRUPT_GATE); // Syscalls
+    SetInterruptDescriptorTableEntry(0x80, CodeSegment, &HandleInterruptRequest0x80, 3, IDT_TRAP_GATE); // Syscalls
 
     picMasterCommand.Write(0x11);
     picSlaveCommand.Write(0x11);
