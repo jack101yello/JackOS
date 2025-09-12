@@ -4,6 +4,7 @@
 #include <common/types.h>
 #include <filesystem/ELF/elfheader.h>
 #include <common/common.h>
+#include <hardware/port.h>
 
 extern void printf(const char* msg);
 extern void printfhex(int hex);

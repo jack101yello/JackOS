@@ -55,6 +55,9 @@ namespace jackos {
                 ~CompositeWidget();
                 virtual void GetFocus(Widget* widget);
                 virtual bool AddChild(Widget* child);
+                virtual Widget* GetChild(int index);
+                virtual int getNumChildren();
+                virtual void RemoveChild(int index);
                 virtual void Draw(jackos::common::GraphicsContext* gc);
                 virtual void OnMouseDown(jackos::common::int32_t x, jackos::common::int32_t y, jackos::common::uint8_t button);
                 virtual void OnMouseUp(jackos::common::int32_t x, jackos::common::int32_t y, jackos::common::uint8_t button);

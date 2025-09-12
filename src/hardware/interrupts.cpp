@@ -170,6 +170,10 @@ void kpanic(uint8_t interruptNumber, uint32_t esp) {
     for(;;); // Infinite halt
 }
 
+void breakpoint() {
+    printf("break");
+}
+
 uint32_t InterruptManager::doHandleInterrupt(uint8_t interruptNumber, uint32_t esp) {
     if(handlers[interruptNumber] != 0) {
         esp = handlers[interruptNumber]->HandleInterrupt(esp);
@@ -182,10 +186,11 @@ uint32_t InterruptManager::doHandleInterrupt(uint8_t interruptNumber, uint32_t e
         printf(msg);
     }
 
-    switch(interruptNumber) {
-        case 0x20: // PIT
-            
-            break;
+    if(interruptNumber == hardwareoffset + 0x01) {
+        for(int i = 0; i < 50; i++) {
+            jackos::common::uint8_t* pixelAddress = (jackos::common::uint8_t*)(0xa0000) + 320*i+i;
+            *pixelAddress = 0x02;
+        }
     }
 
     if(interruptNumber == hardwareoffset) { // PIT

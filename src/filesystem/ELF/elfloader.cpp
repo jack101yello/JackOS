@@ -68,6 +68,11 @@ void Elf_File::run() {
     }
     typedef void (*entry_point_t)(void);
     entry_point_t entry = (entry_point_t)header->e_entry;
+    jackos::hardware::Port8Bit kbport(0x21);
+    kbport.Write(kbport.Read() & ~(1 << 1));
+    asm("sti");
+    uint32_t* new_stack = (uint32_t*)0x007FFFF0;
+    asm volatile("mov %0, %%esp" : : "r"(new_stack));
     entry();
 }
 

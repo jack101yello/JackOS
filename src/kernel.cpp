@@ -130,8 +130,12 @@ extern "C" void* heap;
 
 #define GRAPHICS_MODE
 
-void breakpoint() {
-    printf("");
+void runtime_loop(Desktop* desktop, VideoGraphicsArray* graphics, jackos::terminal::Terminal* terminal) {
+    for(;;) {
+        desktop -> Draw(graphics);
+        terminal -> draw();
+        graphics -> DrawFrame(SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
 }
 
 extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magicnumber) {
@@ -275,18 +279,24 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     
     jackos::terminal::Terminal terminal(&vga, &system_clock, multiboot_structure);
     KeyboardDriver keyboard_driver(&interrupts, &terminal);
-    drvManager.ActivateAll();
     // drvManager.AddDriver(&keyboard_driver);
+    drvManager.ActivateAll();
 
     // Window win1(&desktop, 10, 10, 20, 20, 0xA8, 0x00, 0x00);
     // desktop.AddChild(&win1);
     #endif
 
     #ifdef GRAPHICS_MODE
-    SyscallHandler syscalls(&interrupts, 0x80, &vga, &terminal);
+    SyscallHandler syscalls(&interrupts, 0x80, &vga, &terminal, &desktop, runtime_loop);
     #else
     printf("Setting up syscalls.\n");
     SyscallHandler syscalls(&interrupts, 0x80);
+    #endif
+
+    #ifdef GRAPHICS_MODE
+    runtime_loop(&desktop, &vga, &terminal);
+    #else
+    for(;;);
     #endif
 
     for(;;) { // Infinite loop

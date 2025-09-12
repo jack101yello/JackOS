@@ -145,3 +145,20 @@ bool CompositeWidget::AddChild(Widget* child) {
     ++numChildren;
     return true;
 }
+
+Widget* CompositeWidget::GetChild(int index) {
+    if(index < 0 || index > 100) return nullptr;
+    return children[index];
+}
+
+int CompositeWidget::getNumChildren() {
+    return numChildren;
+}
+
+void CompositeWidget::RemoveChild(int index) {
+    if(index < 0 || index > numChildren) return;
+    for(int i = index; i < numChildren-1; i++) {
+        children[i] = children[i+1];
+    }
+    numChildren--;
+}
