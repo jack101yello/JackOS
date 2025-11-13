@@ -31,6 +31,7 @@ namespace jackos {
                 multiboot* mb;
                 void list_files();
                 void run_file();
+                char last_key;
             
             public:
                 Terminal(jackos::drivers::VideoGraphicsArray* i_graphics, jackos::drivers::PITEventHandler* i_system_clock, multiboot* i_mb);
@@ -38,6 +39,7 @@ namespace jackos {
                 void OnKeyDown(char);
                 void parse_command();
                 void print(const char* message);
+                char getLastKey() { return last_key; }
         };
     }
 }

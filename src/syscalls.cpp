@@ -44,11 +44,16 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp) {
             desktop -> AddChild(&window);
             break;
         }
+        case 2: { // get key
+            char* key = (char*)cpu -> ebx;
+            *key = terminal -> getLastKey();
+            break;
+        }
         case 4: // print
             (graphics != nullptr) ? terminal -> print((char*)cpu -> ebx) : printf((char*)cpu -> ebx);
             break;
         case 5: // draw frame
-            desktop -> Draw(graphics);
+            // desktop -> Draw(graphics);
             graphics -> DrawFrame(SCREEN_WIDTH, SCREEN_HEIGHT);
             break;
         case 6: // draw pixel

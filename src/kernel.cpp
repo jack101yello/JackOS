@@ -128,8 +128,6 @@ extern "C" void callConstructors() {
 
 extern "C" void* heap;
 
-#define GRAPHICS_MODE
-
 void runtime_loop(Desktop* desktop, VideoGraphicsArray* graphics, jackos::terminal::Terminal* terminal) {
     for(;;) {
         desktop -> Draw(graphics);
@@ -140,6 +138,8 @@ void runtime_loop(Desktop* desktop, VideoGraphicsArray* graphics, jackos::termin
 
 extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magicnumber) {
     clear_screen();
+
+    VideoGraphicsArray vga;
 
     printf("Initializing JackOS Kernel\n");
 
@@ -171,7 +171,6 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     DriverManager drvManager;
     #ifdef GRAPHICS_MODE
     printf("Initializing graphics.\n");
-    VideoGraphicsArray vga;
 
     printf("Instantiating Desktop.\n");
     Desktop desktop(SCREEN_WIDTH, SCREEN_HEIGHT, 0x00, 0x00, 0x00);
@@ -292,6 +291,9 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     printf("Setting up syscalls.\n");
     SyscallHandler syscalls(&interrupts, 0x80);
     #endif
+
+    // jackos::filesystem::elf::Elf_File program((Elf_Ehdr*)elf_modules[0].mod_start);
+    // program.run();
 
     #ifdef GRAPHICS_MODE
     runtime_loop(&desktop, &vga, &terminal);

@@ -59,7 +59,23 @@ void Elf_File::phdr_dump() {
     }
 }
 
+struct {
+    uint16_t limit;
+    uint32_t base;
+} __attribute__((packed)) idtr;
+
 void Elf_File::run() {
+    printf("Running ELF.\n");
+    asm volatile("sidt %0" : "=m"(idtr));
+    printf("IDTR Base:");
+    printaddr(idtr.base);
+    printf(" IDTR Limit:");
+    printaddr(idtr.limit);
+    printf("\n");
+    uint32_t eflags;
+    asm volatile("pushf; pop %0" : "=r"(eflags));
+    printf("EFLAGS: ");
+    printaddr(eflags);
     for(int i = 0; i < header -> e_phnum; i++) {
         elf_phdr* ph = get_phdr(i);
         if(ph -> type != 1) continue;
@@ -74,6 +90,26 @@ void Elf_File::run() {
     uint32_t* new_stack = (uint32_t*)0x007FFFF0;
     asm volatile("mov %0, %%esp" : : "r"(new_stack));
     entry();
+    printf("Returning from ELF.\n");
+    asm volatile("sidt %0" : "=m"(idtr));
+    printf("IDTR Base:");
+    printaddr(idtr.base);
+    printf(" IDTR Limit:");
+    printaddr(idtr.limit);
+    printf("\n");
+    uint16_t cs, ds, ss;
+    asm volatile("mov %%cs, %0" : "=r"(cs));
+    asm volatile("mov %%ds, %0" : "=r"(ds));
+    asm volatile("mov %%ss, %0" : "=r"(ss));
+    printf("CS: ");
+    printfhex(cs);
+    printf(" DS: ");
+    printfhex(ds);
+    printf(" SS: ");
+    printfhex(ss);
+    asm volatile("pushf; pop %0" : "=r"(eflags));
+    printf("EFLAGS: ");
+    printaddr(eflags);
 }
 
 void Elf_File::entry_dump() {

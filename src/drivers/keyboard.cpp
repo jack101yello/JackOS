@@ -4,12 +4,15 @@ using namespace jackos::common;
 using namespace jackos::drivers;
 using namespace jackos::hardware;
 
+void printf(const char* str);
+
 KeyboardEventHandler::KeyboardEventHandler() {
 
 }
 
-void KeyboardEventHandler::OnKeyDown(char) {
-
+void KeyboardEventHandler::OnKeyDown(char c) {
+    char foo[] = {c, '\0'};
+    printf(foo);
 }
 
 void KeyboardEventHandler::OnKeyUp(char) {
@@ -41,7 +44,6 @@ void KeyboardDriver::Activate() {
     dataport.Write(0xF4);
 }
 
-void printf(const char* str);
 
 uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp) {
     uint8_t key = dataport.Read();

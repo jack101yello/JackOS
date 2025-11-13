@@ -6,6 +6,7 @@
 #include <gdt.h>
 #include <multitasking.h>
 #include <memorymanagement.h>
+#include <drivers/vga.h>
 
 namespace jackos {
     namespace hardware {

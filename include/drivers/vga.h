@@ -1,6 +1,8 @@
 #ifndef __jackos_drivers_vga_H
 #define __jackos_drivers_vga_H
 
+#define GRAPHICS_MODE
+
 #include <common/types.h>
 #include <hardware/port.h>
 #include <drivers/driver.h>
@@ -11,6 +13,10 @@
 
 namespace jackos {
     namespace drivers {
+        struct character_bitmap {
+            int bitmap[144];
+        };
+
         enum COLOR_CODE {
             BLACK = 0x00,
             BLUE = 0x01,
@@ -19,6 +25,8 @@ namespace jackos {
             RED = 0x04,
             WHITE = 0x3F,
         };
+
+        extern character_bitmap GetCharacterBitmap(const char character);
 
         class VideoGraphicsArray {
             protected:

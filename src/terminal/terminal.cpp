@@ -35,6 +35,7 @@ void Terminal::draw() {
 }
 
 void Terminal::OnKeyDown(char key) {
+    last_key = key;
     switch(key) {
         case 0x0E: // Backspace
             if(buffer_len == 0 || x == 1) break;
@@ -54,6 +55,9 @@ void Terminal::OnKeyDown(char key) {
             buffer_len++;
             x += 1;
             break;
+    }
+    for(int i = 0; i < 50; i++) {
+        asm volatile("int $0x80" : : "a"(6), "b"(i), "c"(i), "d"(0x3F));
     }
 }
 

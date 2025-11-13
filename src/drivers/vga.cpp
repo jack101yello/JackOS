@@ -213,8 +213,11 @@ void VideoGraphicsArray::Print(const char* message, jackos::common::uint32_t x, 
     }
 }
 
-void VideoGraphicsArray::DrawCharacter(const char character, jackos::common::uint32_t x, jackos::common::uint32_t y, jackos::drivers::COLOR_CODE color) {
-    int bitmap[144];
+namespace jackos {
+    namespace drivers {
+    
+character_bitmap GetCharacterBitmap(const char character) {
+    character_bitmap bmp;
     switch(character) {
 case '': {
     int bitmap_temp[] =  {
@@ -234,7 +237,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -254,7 +257,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -274,7 +277,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -294,7 +297,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -314,7 +317,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -334,7 +337,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '\t': {
     int bitmap_temp[] =  {
@@ -354,7 +357,7 @@ case '\t': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '\n': {
     int bitmap_temp[] =  {
@@ -374,7 +377,7 @@ case '\n': {
         1, 0, 1, 0, 0, 1, 0, 0, 1,
         1, 0, 0, 0, 0, 0, 0, 0, 1,
         1, 1, 1, 1, 1, 1, 1, 1, 1,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -394,7 +397,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -414,7 +417,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -434,7 +437,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -454,7 +457,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -474,7 +477,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -494,7 +497,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -514,7 +517,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -534,7 +537,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -554,7 +557,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -574,7 +577,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -594,7 +597,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -614,7 +617,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -634,7 +637,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -654,7 +657,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -674,7 +677,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -694,7 +697,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -714,7 +717,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -734,7 +737,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -754,7 +757,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case ' ': {
     int bitmap_temp[] =  {
@@ -774,7 +777,7 @@ case ' ': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '!': {
     int bitmap_temp[] =  {
@@ -794,7 +797,7 @@ case '!': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '"': {
     int bitmap_temp[] =  {
@@ -814,7 +817,7 @@ case '"': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '#': {
     int bitmap_temp[] =  {
@@ -834,7 +837,7 @@ case '#': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '$': {
     int bitmap_temp[] =  {
@@ -854,7 +857,7 @@ case '$': {
         0, 0, 0, 1, 1, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '%': {
     int bitmap_temp[] =  {
@@ -874,7 +877,7 @@ case '%': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '&': {
     int bitmap_temp[] =  {
@@ -894,7 +897,7 @@ case '&': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '\'': {
     int bitmap_temp[] =  {
@@ -914,7 +917,7 @@ case '\'': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '(': {
     int bitmap_temp[] =  {
@@ -934,7 +937,7 @@ case '(': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case ')': {
     int bitmap_temp[] =  {
@@ -954,7 +957,7 @@ case ')': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '*': {
     int bitmap_temp[] =  {
@@ -974,7 +977,7 @@ case '*': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '+': {
     int bitmap_temp[] =  {
@@ -994,7 +997,7 @@ case '+': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case ',': {
     int bitmap_temp[] =  {
@@ -1014,7 +1017,7 @@ case ',': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '-': {
     int bitmap_temp[] =  {
@@ -1034,7 +1037,7 @@ case '-': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '.': {
     int bitmap_temp[] =  {
@@ -1054,7 +1057,7 @@ case '.': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '/': {
     int bitmap_temp[] =  {
@@ -1074,7 +1077,7 @@ case '/': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '0': {
     int bitmap_temp[] =  {
@@ -1094,7 +1097,7 @@ case '0': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '1': {
     int bitmap_temp[] =  {
@@ -1114,7 +1117,7 @@ case '1': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '2': {
     int bitmap_temp[] =  {
@@ -1134,7 +1137,7 @@ case '2': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '3': {
     int bitmap_temp[] =  {
@@ -1154,7 +1157,7 @@ case '3': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '4': {
     int bitmap_temp[] =  {
@@ -1174,7 +1177,7 @@ case '4': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '5': {
     int bitmap_temp[] =  {
@@ -1194,7 +1197,7 @@ case '5': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '6': {
     int bitmap_temp[] =  {
@@ -1214,7 +1217,7 @@ case '6': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '7': {
     int bitmap_temp[] =  {
@@ -1234,7 +1237,7 @@ case '7': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '8': {
     int bitmap_temp[] =  {
@@ -1254,7 +1257,7 @@ case '8': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '9': {
     int bitmap_temp[] =  {
@@ -1274,7 +1277,7 @@ case '9': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case ':': {
     int bitmap_temp[] =  {
@@ -1294,7 +1297,7 @@ case ':': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case ';': {
     int bitmap_temp[] =  {
@@ -1314,7 +1317,7 @@ case ';': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '<': {
     int bitmap_temp[] =  {
@@ -1334,7 +1337,7 @@ case '<': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '=': {
     int bitmap_temp[] =  {
@@ -1354,7 +1357,7 @@ case '=': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '>': {
     int bitmap_temp[] =  {
@@ -1374,7 +1377,7 @@ case '>': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '?': {
     int bitmap_temp[] =  {
@@ -1394,7 +1397,7 @@ case '?': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '@': {
     int bitmap_temp[] =  {
@@ -1414,7 +1417,7 @@ case '@': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'A': {
     int bitmap_temp[] =  {
@@ -1434,7 +1437,7 @@ case 'A': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'B': {
     int bitmap_temp[] =  {
@@ -1454,7 +1457,7 @@ case 'B': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'C': {
     int bitmap_temp[] =  {
@@ -1474,7 +1477,7 @@ case 'C': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'D': {
     int bitmap_temp[] =  {
@@ -1494,7 +1497,7 @@ case 'D': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'E': {
     int bitmap_temp[] =  {
@@ -1514,7 +1517,7 @@ case 'E': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'F': {
     int bitmap_temp[] =  {
@@ -1534,7 +1537,7 @@ case 'F': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'G': {
     int bitmap_temp[] =  {
@@ -1554,7 +1557,7 @@ case 'G': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'H': {
     int bitmap_temp[] =  {
@@ -1574,7 +1577,7 @@ case 'H': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'I': {
     int bitmap_temp[] =  {
@@ -1594,7 +1597,7 @@ case 'I': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'J': {
     int bitmap_temp[] =  {
@@ -1614,7 +1617,7 @@ case 'J': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'K': {
     int bitmap_temp[] =  {
@@ -1634,7 +1637,7 @@ case 'K': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'L': {
     int bitmap_temp[] =  {
@@ -1654,7 +1657,7 @@ case 'L': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'M': {
     int bitmap_temp[] =  {
@@ -1674,7 +1677,7 @@ case 'M': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'N': {
     int bitmap_temp[] =  {
@@ -1694,7 +1697,7 @@ case 'N': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'O': {
     int bitmap_temp[] =  {
@@ -1714,7 +1717,7 @@ case 'O': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'P': {
     int bitmap_temp[] =  {
@@ -1734,7 +1737,7 @@ case 'P': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'Q': {
     int bitmap_temp[] =  {
@@ -1754,7 +1757,7 @@ case 'Q': {
         0, 0, 0, 0, 1, 1, 1, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'R': {
     int bitmap_temp[] =  {
@@ -1774,7 +1777,7 @@ case 'R': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'S': {
     int bitmap_temp[] =  {
@@ -1794,7 +1797,7 @@ case 'S': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'T': {
     int bitmap_temp[] =  {
@@ -1814,7 +1817,7 @@ case 'T': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'U': {
     int bitmap_temp[] =  {
@@ -1834,7 +1837,7 @@ case 'U': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'V': {
     int bitmap_temp[] =  {
@@ -1854,7 +1857,7 @@ case 'V': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'W': {
     int bitmap_temp[] =  {
@@ -1874,7 +1877,7 @@ case 'W': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'X': {
     int bitmap_temp[] =  {
@@ -1894,7 +1897,7 @@ case 'X': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'Y': {
     int bitmap_temp[] =  {
@@ -1914,7 +1917,7 @@ case 'Y': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'Z': {
     int bitmap_temp[] =  {
@@ -1934,7 +1937,7 @@ case 'Z': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '[': {
     int bitmap_temp[] =  {
@@ -1954,7 +1957,7 @@ case '[': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '\\': {
     int bitmap_temp[] =  {
@@ -1974,7 +1977,7 @@ case '\\': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case ']': {
     int bitmap_temp[] =  {
@@ -1994,7 +1997,7 @@ case ']': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '^': {
     int bitmap_temp[] =  {
@@ -2014,7 +2017,7 @@ case '^': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '_': {
     int bitmap_temp[] =  {
@@ -2034,7 +2037,7 @@ case '_': {
         1, 1, 1, 1, 1, 1, 1, 1, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '`': {
     int bitmap_temp[] =  {
@@ -2054,7 +2057,7 @@ case '`': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'a': {
     int bitmap_temp[] =  {
@@ -2074,7 +2077,7 @@ case 'a': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'b': {
     int bitmap_temp[] =  {
@@ -2094,7 +2097,7 @@ case 'b': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'c': {
     int bitmap_temp[] =  {
@@ -2114,7 +2117,7 @@ case 'c': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'd': {
     int bitmap_temp[] =  {
@@ -2134,7 +2137,7 @@ case 'd': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'e': {
     int bitmap_temp[] =  {
@@ -2154,7 +2157,7 @@ case 'e': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'f': {
     int bitmap_temp[] =  {
@@ -2174,7 +2177,7 @@ case 'f': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'g': {
     int bitmap_temp[] =  {
@@ -2194,7 +2197,7 @@ case 'g': {
         1, 1, 0, 0, 1, 1, 0, 0, 0,
         0, 1, 1, 1, 1, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'h': {
     int bitmap_temp[] =  {
@@ -2214,7 +2217,7 @@ case 'h': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'i': {
     int bitmap_temp[] =  {
@@ -2234,7 +2237,7 @@ case 'i': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'j': {
     int bitmap_temp[] =  {
@@ -2254,7 +2257,7 @@ case 'j': {
         0, 1, 1, 0, 0, 1, 1, 0, 0,
         0, 0, 1, 1, 1, 1, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'k': {
     int bitmap_temp[] =  {
@@ -2274,7 +2277,7 @@ case 'k': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'l': {
     int bitmap_temp[] =  {
@@ -2294,7 +2297,7 @@ case 'l': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'm': {
     int bitmap_temp[] =  {
@@ -2314,7 +2317,7 @@ case 'm': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'n': {
     int bitmap_temp[] =  {
@@ -2334,7 +2337,7 @@ case 'n': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'o': {
     int bitmap_temp[] =  {
@@ -2354,7 +2357,7 @@ case 'o': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'p': {
     int bitmap_temp[] =  {
@@ -2374,7 +2377,7 @@ case 'p': {
         0, 1, 1, 0, 0, 0, 0, 0, 0,
         1, 1, 1, 1, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'q': {
     int bitmap_temp[] =  {
@@ -2394,7 +2397,7 @@ case 'q': {
         0, 0, 0, 0, 1, 1, 0, 0, 0,
         0, 0, 0, 1, 1, 1, 1, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'r': {
     int bitmap_temp[] =  {
@@ -2414,7 +2417,7 @@ case 'r': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 's': {
     int bitmap_temp[] =  {
@@ -2434,7 +2437,7 @@ case 's': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 't': {
     int bitmap_temp[] =  {
@@ -2454,7 +2457,7 @@ case 't': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'u': {
     int bitmap_temp[] =  {
@@ -2474,7 +2477,7 @@ case 'u': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'v': {
     int bitmap_temp[] =  {
@@ -2494,7 +2497,7 @@ case 'v': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'w': {
     int bitmap_temp[] =  {
@@ -2514,7 +2517,7 @@ case 'w': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'x': {
     int bitmap_temp[] =  {
@@ -2534,7 +2537,7 @@ case 'x': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'y': {
     int bitmap_temp[] =  {
@@ -2554,7 +2557,7 @@ case 'y': {
         0, 0, 0, 0, 1, 1, 0, 0, 0,
         1, 1, 1, 1, 1, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case 'z': {
     int bitmap_temp[] =  {
@@ -2574,7 +2577,7 @@ case 'z': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '{': {
     int bitmap_temp[] =  {
@@ -2594,7 +2597,7 @@ case '{': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '|': {
     int bitmap_temp[] =  {
@@ -2614,7 +2617,7 @@ case '|': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '}': {
     int bitmap_temp[] =  {
@@ -2634,7 +2637,7 @@ case '}': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '~': {
     int bitmap_temp[] =  {
@@ -2654,7 +2657,7 @@ case '~': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 
 case '': {
     int bitmap_temp[] =  {
@@ -2674,7 +2677,7 @@ case '': {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
 case '\b': {
     int bitmap_temp[] = {
         1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -2693,7 +2696,7 @@ case '\b': {
         1, 1, 1, 1, 1, 1, 1, 1, 1,
         1, 1, 1, 1, 1, 1, 1, 1, 1,
         1, 1, 1, 1, 1, 1, 1, 1, 1,
-    }; for(int i = 0; i < 144; i++) { bitmap[i] = bitmap_temp[i]; } break; }
+    }; for(int i = 0; i < 144; i++) { bmp.bitmap[i] = bitmap_temp[i]; } break; }
     break;
 
 default:
@@ -2717,10 +2720,17 @@ default:
     };
     break;
     }
+    return bmp;
+}
 
+}
+}
+
+void VideoGraphicsArray::DrawCharacter(char character, uint32_t x, uint32_t y, COLOR_CODE color) {
+    character_bitmap bmp = GetCharacterBitmap(character);
     for(int pixy = 0; pixy < 16; pixy++) {
         for(int pixx = 0; pixx < 9; pixx++) {
-            if(bitmap[pixx + 9*pixy] == 1) {
+            if(bmp.bitmap[pixx + 9*pixy] == 1) {
                 PutPixel(x+pixx, y+pixy, color);
             }
         }

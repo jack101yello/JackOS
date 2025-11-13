@@ -143,28 +143,66 @@ uint32_t InterruptManager::handleInterrupt(uint8_t interruptNumber, uint32_t esp
     return esp;
 }
 
+extern jackos::drivers::character_bitmap GetCharacterBitmap(const char character);
+void SetPixel(int x, int y) {
+    uint8_t* framebuffer = (uint8_t*)0xA0000;
+    if(x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT) return;
+    framebuffer[x + y * SCREEN_WIDTH] = 0x3F;
+}
+
+void DrawCharacter(const char character, int x, int y) {
+    jackos::drivers::character_bitmap bitmap = jackos::drivers::GetCharacterBitmap(character);
+    for(int j = 0; j < 16; j++) {
+        for(int i = 0; i < 9; i++) {
+            if(bitmap.bitmap[i + j * 9] == 1) {
+                SetPixel((x + i)%SCREEN_WIDTH, (y + j) + ((x + i)/SCREEN_WIDTH)*16);
+            }
+        }
+    }
+}
+
+void bluescreen(const char* msg) {
+    uint8_t* framebuffer = (uint8_t*)0xA0000;
+    for(int i = 0; i < SCREEN_WIDTH; i++) {
+        for(int j = 0; j < SCREEN_HEIGHT; j++) {
+            framebuffer[i + j * SCREEN_WIDTH] = 0x01;
+        }
+    }
+    for(int i = 0; msg[i] != '\0'; i++) {
+        DrawCharacter(msg[i], 10 + i * 9, 10);
+    }
+}
+
+void print_message(const char* msg) {
+    #ifdef GRAPHICS_MODE
+    bluescreen(msg);
+    #else
+    printf(msg);
+    #endif
+}
+
 void kpanic(uint8_t interruptNumber, uint32_t esp) {
     // Need to adapt this for graphics mode. Some sort of a bluescreen would suffice.
     switch(interruptNumber) { // Check for exceptions
-        case 0x00: printf("\n/// Exception 0x00: Single-step interrupt.\n"); break; // Single-step interrupt
-        case 0x02: printf("\n/// Exception 0x02: Non-maskable interrupt (NMI).\n"); break; // Non-maskable interrupt (NMI)
-        case 0x03: printf("\n/// Exception 0x03: Breakpoint.\n"); break; // Breakpoint
-        case 0x04: printf("\n/// Exception 0x04: Overflow.\n"); break; // Overflow
-        case 0x05: printf("\n/// Exception 0x05: Bound range exceeded.\n"); break; // Bound range exceeded
-        case 0x06: printf("\n/// Exception 0x06: Invalid opcode.\n"); break; // Invalid opcode
-        case 0x07: printf("\n/// Exception 0x07: Coprocessor unavailable.\n"); break; // Coprocessor not available
-        case 0x08: printf("\n/// Exception 0x08: Double fault.\n"); break; // Double fault
-        case 0x09: printf("\n/// Exception 0x09: Coprocessor segment overrun.\n"); break; // Coprocessor segment overrun
-        case 0x0A: printf("\n/// Exception 0x0A: Invalid task state segment.\n"); break; // Invalid task state segment
-        case 0x0B: printf("\n/// Exception 0x0B: Segment not present.\n"); break; // Segment not present
-        case 0x0C: printf("\n/// Exception 0x0C: Stack segment fault.\n"); break; // Stack segment fault
-        case 0x0D: printf("\n/// Exception 0x0D: General protection fault.\n"); break; // General protection fault
-        case 0x0E: printf("\n/// Exception 0x0E: Page fault.\n"); break; // Page fault
-        case 0x0F: printf("\n/// Exception 0x0F: Reserved exception.\n"); break; // Reserved
-        case 0x10: printf("\n/// Exception 0x10: x87 floating point exception.\n"); break; // x87 floating point exception
-        case 0x11: printf("\n/// Exception 0x11: Alignment check.\n"); break; // Alignment check
-        case 0x12: printf("\n/// Exception 0x12: Machine check.\n"); break; // Machine check
-        case 0x13: printf("\n/// Exception 0x13: SIMD floating point exception.\n"); break; // SIMD floating point exception
+        case 0x00: print_message("\n/// Exception 0x00: Single-step interrupt.\n"); break; // Single-step interrupt
+        case 0x02: print_message("\n/// Exception 0x02: Non-maskable interrupt (NMI).\n"); break; // Non-maskable interrupt (NMI)
+        case 0x03: print_message("\n/// Exception 0x03: Breakpoint.\n"); break; // Breakpoint
+        case 0x04: print_message("\n/// Exception 0x04: Overflow.\n"); break; // Overflow
+        case 0x05: print_message("\n/// Exception 0x05: Bound range exceeded.\n"); break; // Bound range exceeded
+        case 0x06: print_message("\n/// Exception 0x06: Invalid opcode.\n"); break; // Invalid opcode
+        case 0x07: print_message("\n/// Exception 0x07: Coprocessor unavailable.\n"); break; // Coprocessor not available
+        case 0x08: print_message("\n/// Exception 0x08: Double fault.\n"); break; // Double fault
+        case 0x09: print_message("\n/// Exception 0x09: Coprocessor segment overrun.\n"); break; // Coprocessor segment overrun
+        case 0x0A: print_message("\n/// Exception 0x0A: Invalid task state segment.\n"); break; // Invalid task state segment
+        case 0x0B: print_message("\n/// Exception 0x0B: Segment not present.\n"); break; // Segment not present
+        case 0x0C: print_message("\n/// Exception 0x0C: Stack segment fault.\n"); break; // Stack segment fault
+        case 0x0D: print_message("\n/// Exception 0x0D: General protection fault.\n"); break; // General protection fault
+        case 0x0E: print_message("\n/// Exception 0x0E: Page fault.\n"); break; // Page fault
+        case 0x0F: print_message("\n/// Exception 0x0F: Reserved exception.\n"); break; // Reserved
+        case 0x10: print_message("\n/// Exception 0x10: x87 floating point exception.\n"); break; // x87 floating point exception
+        case 0x11: print_message("\n/// Exception 0x11: Alignment check.\n"); break; // Alignment check
+        case 0x12: print_message("\n/// Exception 0x12: Machine check.\n"); break; // Machine check
+        case 0x13: print_message("\n/// Exception 0x13: SIMD floating point exception.\n"); break; // SIMD floating point exception
 
         default: break; // This should never run; a mistake has been made.
     }
@@ -187,15 +225,12 @@ uint32_t InterruptManager::doHandleInterrupt(uint8_t interruptNumber, uint32_t e
         printf(msg);
     }
 
-    if(interruptNumber == hardwareoffset + 0x01) {
-        for(int i = 0; i < 50; i++) {
-            jackos::common::uint8_t* pixelAddress = (jackos::common::uint8_t*)(0xa0000) + 320*i+i;
-            *pixelAddress = 0x02;
-        }
-    }
-
     if(interruptNumber == hardwareoffset) { // PIT
         esp = (uint32_t)taskManager->Schedule((CPUState*)esp);
+    }
+
+    else if(interruptNumber == hardwareoffset + 0x01) { // Keyboard
+        DrawCharacter('K', 150, 150);
     }
 
     if(interruptNumber >= 0x00 && interruptNumber <= 0x13) { // Exception
