@@ -8,8 +8,8 @@ SECTIONS
 
     .text :
     {
-        *(.multiboot)
-        *(.text*)
+        KEEP(*(.multiboot))
+	*(.text*)
         *(.rodata)
     }
 
@@ -25,7 +25,7 @@ SECTIONS
 
     .bss :
     {
-        *.(.bss)
+        *(.bss)
     }
 
     /DISCARD/ :
