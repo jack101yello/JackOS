@@ -119,7 +119,7 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp) {
                 char hex[] = "0123456789ABCDEF";
                 msg[11] = hex[(key >> 4) & 0x0F];
                 msg[12] = hex[key & 0x0F];
-                printf(msg);
+                // printf(msg);
             }
     }
     return esp;

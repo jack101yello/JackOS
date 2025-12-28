@@ -178,11 +178,11 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     #else
     printf("Setting up drivers...\n");
 
-    printf("\tInitiating mouse.\n");
-    MouseToConsole mhandler;
-    MouseToConsole mousehandler;
-    MouseDriver mouse(&interrupts, &mousehandler);
-    drvManager.AddDriver(&mouse);
+    // printf("\tInitiating mouse.\n");
+    // MouseToConsole mhandler;
+    // MouseToConsole mousehandler;
+    // MouseDriver mouse(&interrupts, &mousehandler);
+    // drvManager.AddDriver(&mouse);
     printf("\tInitiating keyboard.\n");
     KeyboardEventHandler kbhandler;
     KeyboardDriver keyboard(&interrupts, &kbhandler);
@@ -291,6 +291,12 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     printf("Setting up syscalls.\n");
     SyscallHandler syscalls(&interrupts, 0x80);
     #endif
+
+    jackos::terminal::Terminal terminal(multiboot_structure);
+    KeyboardDriver keyboard_driver(&interrupts, &terminal);
+    drvManager.ActivateAll();
+
+    terminal.draw();
 
     // jackos::filesystem::elf::Elf_File program((Elf_Ehdr*)elf_modules[0].mod_start);
     // program.run();

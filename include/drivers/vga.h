@@ -1,7 +1,7 @@
 #ifndef __jackos_drivers_vga_H
 #define __jackos_drivers_vga_H
 
-#define GRAPHICS_MODE
+// #define GRAPHICS_MODE
 
 #include <common/types.h>
 #include <hardware/port.h>
