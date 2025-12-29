@@ -6,27 +6,29 @@
 
 namespace jackos {
     struct CPUState {
-        jackos::common::uint32_t eax;
-        jackos::common::uint32_t ebx;
-        jackos::common::uint32_t ecx;
-        jackos::common::uint32_t edx;
-
-        jackos::common::uint32_t esi;
         jackos::common::uint32_t edi;
+        jackos::common::uint32_t esi;
         jackos::common::uint32_t ebp;
+        jackos::common::uint32_t esp;
+        jackos::common::uint32_t ebx;
+        jackos::common::uint32_t edx;
+        jackos::common::uint32_t ecx;
+        jackos::common::uint32_t eax;
+
+        jackos::common::uint32_t interrupt;
+        jackos::common::uint32_t error;
 
         // jackos::common::uint32_t gs;
         // jackos::common::uint32_t fs;
         // jackos::common::uint32_t es;
         // jackos::common::uint32_t ds;
 
-        jackos::common::uint32_t error;
 
         jackos::common::uint32_t eip;
         jackos::common::uint32_t cs;
         jackos::common::uint32_t eflags;
-        jackos::common::uint32_t esp;
-        jackos::common::uint32_t ss;
+        // jackos::common::uint32_t esp;
+        // jackos::common::uint32_t ss;
     } __attribute__((packed));
 
     class Task {

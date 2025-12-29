@@ -9,7 +9,7 @@ SECTIONS
     .text :
     {
         KEEP(*(.multiboot))
-	*(.text*)
+	    *(.text*)
         *(.rodata)
     }
 

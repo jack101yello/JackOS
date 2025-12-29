@@ -34,7 +34,7 @@ void Elf_File::header_dump() {
 
 elf_phdr* Elf_File::get_phdr(long unsigned int index) {
     if(index >= header -> e_phnum) return nullptr;
-    return (elf_phdr*)((char*)header + header -> e_phoff);
+    return (elf_phdr*)((char*)header + header -> e_phoff + index * sizeof(elf_phdr));
 }
 
 void Elf_File::phdr_dump(long unsigned int index) {
@@ -67,20 +67,37 @@ struct {
 void Elf_File::run() {
     printf("Running ELF.\n");
     asm volatile("sidt %0" : "=m"(idtr));
-    printf("IDTR Base:");
-    printaddr(idtr.base);
-    printf(" IDTR Limit:");
-    printaddr(idtr.limit);
-    printf("\n");
     uint32_t eflags;
-    asm volatile("pushf; pop %0" : "=r"(eflags));
-    printf("EFLAGS: ");
-    printaddr(eflags);
+    asm volatile(
+        "pushf\n\t"
+        "pop %0"
+        : "=r"(eflags)
+    );
+    printf("\n");
     for(int i = 0; i < header -> e_phnum; i++) {
         elf_phdr* ph = get_phdr(i);
         if(ph -> type != 1) continue;
+        printf("Source bytes (ELF offset):\n");
         memcpy((uint8_t*)ph->vaddr, (uint8_t*)header + ph->offset, ph->filesz);
         memset((uint8_t*)(ph->vaddr + ph->filesz), 0, ph->memsz - ph->filesz);
+        printf("Post-load dump @ vaddr:\n");
+        for(int j = 0; j < 80; j++) {
+            uint8_t b = *(uint8_t*)(ph->vaddr + j);
+            printfhex(b);
+        }
+        printf("\n");
+        printf("Rodata dump:\n");
+        for(int j = 0; j < 32; j++) {
+            char c = *(char*)(0x002af040 + j);
+            if (c >= 32 && c <= 126) {
+                const char foo[2] = {c, '\0'};
+                printf(foo);
+            }
+            else {
+                printf(".");
+            }
+        }
+        printf("\n");
     }
     typedef void (*entry_point_t)(void);
     entry_point_t entry = (entry_point_t)header->e_entry;
@@ -92,24 +109,6 @@ void Elf_File::run() {
     entry();
     printf("Returning from ELF.\n");
     asm volatile("sidt %0" : "=m"(idtr));
-    printf("IDTR Base:");
-    printaddr(idtr.base);
-    printf(" IDTR Limit:");
-    printaddr(idtr.limit);
-    printf("\n");
-    uint16_t cs, ds, ss;
-    asm volatile("mov %%cs, %0" : "=r"(cs));
-    asm volatile("mov %%ds, %0" : "=r"(ds));
-    asm volatile("mov %%ss, %0" : "=r"(ss));
-    printf("CS: ");
-    printfhex(cs);
-    printf(" DS: ");
-    printfhex(ds);
-    printf(" SS: ");
-    printfhex(ss);
-    asm volatile("pushf; pop %0" : "=r"(eflags));
-    printf("EFLAGS: ");
-    printaddr(eflags);
 }
 
 void Elf_File::entry_dump() {

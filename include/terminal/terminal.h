@@ -30,6 +30,7 @@ namespace jackos {
                 void list_files();
                 void run_file();
                 char last_key;
+                void prompt();
             
             public:
                 Terminal(multiboot* i_mb);
@@ -38,6 +39,7 @@ namespace jackos {
                 void parse_command();
                 void print(const char* message);
                 char getLastKey() { return last_key; }
+                void initialize();
         };
     }
 }

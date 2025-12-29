@@ -28,8 +28,10 @@ using namespace jackos::hardware;
 using namespace jackos::gui;
 using namespace jackos::filesystem;
 
+static uint16_t* VideoMemory = (uint16_t*)0xb8000;
+
 void printf(const char* str) {
-    static uint16_t* VideoMemory = (uint16_t*)0xb8000;
+    // static uint16_t* VideoMemory = (uint16_t*)0xb8000;
 
     static uint8_t x = 0, y = 0;
 
@@ -41,6 +43,15 @@ void printf(const char* str) {
                 break;
             case '\0':
                 return;
+            case '\e':
+                for(int yi = 0; yi < 25; yi++) {
+                    for(int xi = 0; xi < 80; xi++) {
+                        VideoMemory[80*yi + xi] = (VideoMemory[80*yi + xi] & 0xFF00) | ' ';
+                        x = 0;
+                        y = 0;
+                    }
+                }
+                break;
             default:
                 VideoMemory[80*y + x] = (VideoMemory[80*y + x] & 0xFF00) | str[i];
                 x++;
@@ -64,12 +75,7 @@ void printf(const char* str) {
 }
 
 void clear_screen() {
-    for(int i = 0; i < 25; i++) {
-        for(int j = 0; j < 80; j++) {
-            printf(" ");
-        }
-        printf("\n");
-    }
+    printf("\e");
 }
 
 void printfhex(int val) {
@@ -131,13 +137,13 @@ extern "C" void* heap;
 void runtime_loop(Desktop* desktop, VideoGraphicsArray* graphics, jackos::terminal::Terminal* terminal) {
     for(;;) {
         desktop -> Draw(graphics);
-        terminal -> draw();
+        // terminal -> draw();
         graphics -> DrawFrame(SCREEN_WIDTH, SCREEN_HEIGHT);
     }
 }
 
 extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magicnumber) {
-    clear_screen();
+    // clear_screen();
 
     VideoGraphicsArray vga;
 
@@ -296,7 +302,7 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     KeyboardDriver keyboard_driver(&interrupts, &terminal);
     drvManager.ActivateAll();
 
-    terminal.draw();
+    terminal.initialize();
 
     // jackos::filesystem::elf::Elf_File program((Elf_Ehdr*)elf_modules[0].mod_start);
     // program.run();

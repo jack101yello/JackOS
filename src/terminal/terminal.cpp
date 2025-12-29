@@ -12,21 +12,28 @@ jackos::terminal::Terminal::Terminal(multiboot* i_mb) {
     graphics = nullptr;
     system_clock = nullptr;
     buffer_len = 0;
+
 }
 
-void Terminal::draw() {
+void Terminal::initialize() {
+    command_clear();
     newline();
 }
 
+void Terminal::prompt() {
+    printf("> ");
+}
+
 void Terminal::newline() {
-    printf("\n> ");
+    printf("\n");
+    prompt();
 }
 
 void Terminal::OnKeyDown(char key) {
     switch(key) {
         case '\n':
             parse_command();
-            newline();
+            prompt();
             break;
         default:
             if(buffer_len >= TERMINAL_WIDTH) break;
