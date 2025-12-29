@@ -65,7 +65,6 @@ struct {
 } __attribute__((packed)) idtr;
 
 void Elf_File::run() {
-    printf("Running ELF.\n");
     asm volatile("sidt %0" : "=m"(idtr));
     uint32_t eflags;
     asm volatile(
@@ -73,31 +72,11 @@ void Elf_File::run() {
         "pop %0"
         : "=r"(eflags)
     );
-    printf("\n");
     for(int i = 0; i < header -> e_phnum; i++) {
         elf_phdr* ph = get_phdr(i);
         if(ph -> type != 1) continue;
-        printf("Source bytes (ELF offset):\n");
         memcpy((uint8_t*)ph->vaddr, (uint8_t*)header + ph->offset, ph->filesz);
         memset((uint8_t*)(ph->vaddr + ph->filesz), 0, ph->memsz - ph->filesz);
-        printf("Post-load dump @ vaddr:\n");
-        for(int j = 0; j < 80; j++) {
-            uint8_t b = *(uint8_t*)(ph->vaddr + j);
-            printfhex(b);
-        }
-        printf("\n");
-        printf("Rodata dump:\n");
-        for(int j = 0; j < 32; j++) {
-            char c = *(char*)(0x002af040 + j);
-            if (c >= 32 && c <= 126) {
-                const char foo[2] = {c, '\0'};
-                printf(foo);
-            }
-            else {
-                printf(".");
-            }
-        }
-        printf("\n");
     }
     typedef void (*entry_point_t)(void);
     entry_point_t entry = (entry_point_t)header->e_entry;
@@ -107,7 +86,6 @@ void Elf_File::run() {
     uint32_t* new_stack = (uint32_t*)0x007FFFF0;
     asm volatile("mov %0, %%esp" : : "r"(new_stack));
     entry();
-    printf("Returning from ELF.\n");
     asm volatile("sidt %0" : "=m"(idtr));
 }
 

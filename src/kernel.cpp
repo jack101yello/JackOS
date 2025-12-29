@@ -213,13 +213,13 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
 
     interrupts.Activate();
     
-    printf("Checking which elf modules are loaded:\n");
-    multiboot_module_t* elf_modules = (multiboot_module_t*) multiboot_structure -> mods_addr;
-    for(int i = 0; i < multiboot_structure -> mods_count; i++) {
-        printf("\t");
-        printf((const char*)elf_modules[i].string);
-        printf("\n");
-    }
+    // printf("Checking which elf modules are loaded:\n");
+    // multiboot_module_t* elf_modules = (multiboot_module_t*) multiboot_structure -> mods_addr;
+    // for(int i = 0; i < multiboot_structure -> mods_count; i++) {
+    //     printf("\t");
+    //     printf((const char*)elf_modules[i].string);
+    //     printf("\n");
+    // }
 
     // // printf("Setting Up Ramdisk.\n");
     // uint32_t initrd_location = *((uint32_t*)multiboot_structure->mods_addr);

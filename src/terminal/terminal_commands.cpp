@@ -52,7 +52,5 @@ void Terminal::run_file() {
     multiboot_module_t* elf_modules = (multiboot_module_t*) mb -> mods_addr;
     jackos::filesystem::elf::Elf_File elf_program((Elf_Ehdr*)elf_modules[0].mod_start);
     if(!elf_program.check_file()) return;
-    elf_program.header_dump();
-    elf_program.phdr_dump();
     elf_program.run();
 }

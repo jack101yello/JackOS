@@ -6,14 +6,15 @@
 
 namespace jackos {
     struct CPUState {
+        jackos::common::uint32_t eax;
+        jackos::common::uint32_t ebx;
+        jackos::common::uint32_t ecx;
+        jackos::common::uint32_t edx;
+        
         jackos::common::uint32_t edi;
         jackos::common::uint32_t esi;
         jackos::common::uint32_t ebp;
         jackos::common::uint32_t esp;
-        jackos::common::uint32_t ebx;
-        jackos::common::uint32_t edx;
-        jackos::common::uint32_t ecx;
-        jackos::common::uint32_t eax;
 
         jackos::common::uint32_t interrupt;
         jackos::common::uint32_t error;
