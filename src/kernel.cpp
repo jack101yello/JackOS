@@ -52,6 +52,11 @@ void printf(const char* str) {
                     }
                 }
                 break;
+            case '\b':
+                if(x <= 0) break;
+                x--;
+                VideoMemory[80*y + x] = (VideoMemory[80*y + x] & 0xFF00) | ' ';
+                break;
             default:
                 VideoMemory[80*y + x] = (VideoMemory[80*y + x] & 0xFF00) | str[i];
                 x++;

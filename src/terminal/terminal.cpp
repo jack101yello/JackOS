@@ -35,6 +35,13 @@ void Terminal::OnKeyDown(char key) {
             parse_command();
             prompt();
             break;
+        case 0x0E: // Backspace
+            if(buffer_len > 0) {
+                buffer_len--;
+                buffer[buffer_len] = '\0';
+                printf("\b");
+            }
+            break;
         default:
             if(buffer_len >= TERMINAL_WIDTH) break;
             buffer[buffer_len++] = key;
