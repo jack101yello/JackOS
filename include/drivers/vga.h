@@ -26,8 +26,6 @@ namespace jackos {
             WHITE = 0x3F,
         };
 
-        extern character_bitmap GetCharacterBitmap(const char character);
-
         class VideoGraphicsArray {
             protected:
                 jackos::hardware::Port8Bit miscport;
@@ -42,10 +40,12 @@ namespace jackos {
                 jackos::hardware::Port8Bit attributeControllerWritePort;
                 jackos::hardware::Port8Bit attributeControllerResetPort;
                 jackos::common::uint32_t framebuffer[SCREEN_WIDTH][SCREEN_HEIGHT];
-
+                jackos::common::uint8_t savedFont[256*32];
+                
                 void WriteRegisters(jackos::common::uint8_t* registers);
                 jackos::common::uint8_t* GetFrameBufferSegment();
                 virtual jackos::drivers::COLOR_CODE GetColorIndex(jackos::common::uint8_t r, jackos::common::uint8_t g, jackos::common::uint8_t b);
+                jackos::common::uint8_t savedRegisters[1 + 5 + 25 + 9 + 21];
             
             public:
                 VideoGraphicsArray();
@@ -58,8 +58,9 @@ namespace jackos {
                 virtual void FillRectangle(jackos::common::uint32_t x, jackos::common::uint32_t y, jackos::common::uint32_t w, jackos::common::uint32_t h, jackos::common::uint8_t r, jackos::common::uint8_t g, jackos::common::uint8_t b);
                 virtual void FillRectangle(jackos::common::uint32_t x, jackos::common::uint32_t y, jackos::common::uint32_t w, jackos::common::uint32_t h, jackos::drivers::COLOR_CODE color);
                 virtual void DrawFrame(jackos::common::uint32_t width, jackos::common::uint32_t height);
-                virtual void DrawCharacter(const char character, jackos::common::uint32_t x, jackos::common::uint32_t y, jackos::drivers::COLOR_CODE color);
-                virtual void Print(const char* message, jackos::common::uint32_t x, jackos::common::uint32_t y, jackos::drivers::COLOR_CODE color);
+                virtual void SetTextMode();
+                virtual void WaitForVerticalRetrace();
+                void WriteFont();
         };
     }
 }

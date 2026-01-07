@@ -36,6 +36,18 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp) {
         case 0: // Print
             printf((const char*)(cpu -> ecx));
             break;
+        case 1: // Enter graphics mode
+            if(graphicsMode || graphics == nullptr) break;
+            graphicsMode = true;
+            graphics -> SetMode(SCREEN_WIDTH, SCREEN_HEIGHT, COLOR_DEPTH);
+            desktop -> Draw(graphics);
+            graphics -> DrawFrame(SCREEN_WIDTH, SCREEN_HEIGHT);
+            break;
+        case 2: // Exit graphics mode
+            if(!graphicsMode) break;
+            graphicsMode = false;
+            graphics -> SetTextMode();
+            break;
         default:
             break;
     }

@@ -143,34 +143,10 @@ uint32_t InterruptManager::handleInterrupt(uint8_t interruptNumber, uint32_t esp
     return esp;
 }
 
-extern jackos::drivers::character_bitmap GetCharacterBitmap(const char character);
 void SetPixel(int x, int y) {
     uint8_t* framebuffer = (uint8_t*)0xA0000;
     if(x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT) return;
     framebuffer[x + y * SCREEN_WIDTH] = 0x3F;
-}
-
-void DrawCharacter(const char character, int x, int y) {
-    jackos::drivers::character_bitmap bitmap = jackos::drivers::GetCharacterBitmap(character);
-    for(int j = 0; j < 16; j++) {
-        for(int i = 0; i < 9; i++) {
-            if(bitmap.bitmap[i + j * 9] == 1) {
-                SetPixel((x + i)%SCREEN_WIDTH, (y + j) + ((x + i)/SCREEN_WIDTH)*16);
-            }
-        }
-    }
-}
-
-void bluescreen(const char* msg) {
-    uint8_t* framebuffer = (uint8_t*)0xA0000;
-    for(int i = 0; i < SCREEN_WIDTH; i++) {
-        for(int j = 0; j < SCREEN_HEIGHT; j++) {
-            framebuffer[i + j * SCREEN_WIDTH] = 0x01;
-        }
-    }
-    for(int i = 0; msg[i] != '\0'; i++) {
-        DrawCharacter(msg[i], 10 + i * 9, 10);
-    }
 }
 
 void print_message(const char* msg) {
@@ -227,10 +203,6 @@ uint32_t InterruptManager::doHandleInterrupt(uint8_t interruptNumber, uint32_t e
 
     if(interruptNumber == hardwareoffset) { // PIT
         esp = (uint32_t)taskManager->Schedule((CPUState*)esp);
-    }
-
-    else if(interruptNumber == hardwareoffset + 0x01) { // Keyboard
-        DrawCharacter('K', 150, 150);
     }
 
     if(interruptNumber >= 0x00 && interruptNumber <= 0x13) { // Exception

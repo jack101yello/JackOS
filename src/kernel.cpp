@@ -46,7 +46,7 @@ void printf(const char* str) {
             case '\e':
                 for(int yi = 0; yi < 25; yi++) {
                     for(int xi = 0; xi < 80; xi++) {
-                        VideoMemory[80*yi + xi] = (VideoMemory[80*yi + xi] & 0xFF00) | ' ';
+                        VideoMemory[80*yi + xi] = (0x0F << 8) | ' ';
                         x = 0;
                         y = 0;
                     }
@@ -166,7 +166,7 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     // printfhex((heap >> 16) & 0xFF);
     // printfhex((heap >>  8) & 0xFF);
     // printfhex((heap      ) & 0xFF);
-    void* allocated = memoryManager.malloc(1024);
+    // void* allocated = memoryManager.malloc(1024);
     // printf("\nAllocated: 0x");
     // printfhex(((size_t)allocated >> 24) & 0xFF);
     // printfhex(((size_t)allocated >> 16) & 0xFF);
@@ -180,13 +180,6 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     InterruptManager interrupts(0x20, &gdt, &taskManager);
 
     DriverManager drvManager;
-    #ifdef GRAPHICS_MODE
-    printf("Initializing graphics.\n");
-
-    printf("Instantiating Desktop.\n");
-    Desktop desktop(SCREEN_WIDTH, SCREEN_HEIGHT, 0x00, 0x00, 0x00);
-
-    #else
     printf("Setting up drivers...\n");
 
     // printf("\tInitiating mouse.\n");
@@ -198,7 +191,6 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     KeyboardEventHandler kbhandler;
     KeyboardDriver keyboard(&interrupts, &kbhandler);
     drvManager.AddDriver(&keyboard);
-    #endif
 
     printf("\tInitiating PIT.\n");
     PITEventHandler system_clock;
@@ -217,14 +209,6 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     drvManager.ActivateAll();
 
     interrupts.Activate();
-    
-    // printf("Checking which elf modules are loaded:\n");
-    // multiboot_module_t* elf_modules = (multiboot_module_t*) multiboot_structure -> mods_addr;
-    // for(int i = 0; i < multiboot_structure -> mods_count; i++) {
-    //     printf("\t");
-    //     printf((const char*)elf_modules[i].string);
-    //     printf("\n");
-    // }
 
     // // printf("Setting Up Ramdisk.\n");
     // uint32_t initrd_location = *((uint32_t*)multiboot_structure->mods_addr);
@@ -281,50 +265,16 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     // loaded_program.header_dump();
     // loaded_program.run();
 
-    #ifdef GRAPHICS_MODE
-    printf("Switching to graphics mode.\n");
-    system_clock.wait(10);
-
-    vga.SetMode(SCREEN_WIDTH, SCREEN_HEIGHT, COLOR_DEPTH);
-    
-    jackos::terminal::Terminal terminal(&vga, &system_clock, multiboot_structure);
-    KeyboardDriver keyboard_driver(&interrupts, &terminal);
-    // drvManager.AddDriver(&keyboard_driver);
-    drvManager.ActivateAll();
-
-    // Window win1(&desktop, 10, 10, 20, 20, 0xA8, 0x00, 0x00);
-    // desktop.AddChild(&win1);
-    #endif
-
-    #ifdef GRAPHICS_MODE
-    SyscallHandler syscalls(&interrupts, 0x80, &vga, &terminal, &desktop, runtime_loop);
-    #else
-    printf("Setting up syscalls.\n");
-    SyscallHandler syscalls(&interrupts, 0x80);
-    #endif
-
     jackos::terminal::Terminal terminal(multiboot_structure);
     KeyboardDriver keyboard_driver(&interrupts, &terminal);
+
+    printf("Setting up syscalls.\n");
+    jackos::gui::Desktop desktop(SCREEN_WIDTH, SCREEN_HEIGHT, 0x00, 0x00, 0xA8);
+    SyscallHandler syscalls(&interrupts, 0x80, &vga, &terminal, &desktop, &runtime_loop);
+
     drvManager.ActivateAll();
 
     terminal.initialize();
 
-    // jackos::filesystem::elf::Elf_File program((Elf_Ehdr*)elf_modules[0].mod_start);
-    // program.run();
-
-    #ifdef GRAPHICS_MODE
-    runtime_loop(&desktop, &vga, &terminal);
-    #else
     for(;;);
-    #endif
-
-    for(;;) { // Infinite loop
-        #ifdef GRAPHICS_MODE
-        desktop.Draw(&vga);
-
-        terminal.draw();
-
-        vga.DrawFrame(SCREEN_WIDTH, SCREEN_HEIGHT);
-        #endif
-    }
 }
