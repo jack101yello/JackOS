@@ -5,6 +5,8 @@
 #include <filesystem/ELF/elfheader.h>
 #include <common/common.h>
 #include <hardware/port.h>
+#include <gdt.h>
+#include <multitasking.h>
 
 extern void printf(const char* msg);
 extern void printfhex(int hex);
@@ -17,9 +19,10 @@ namespace jackos {
                 private:
                     Elf_Ehdr* header;
                     void entry_dump();
+                    jackos::GlobalDescriptorTable* gdt;
 
                 public:
-                    Elf_File(Elf_Ehdr* i_header);
+                    Elf_File(Elf_Ehdr* i_header, jackos::GlobalDescriptorTable* i_gdt);
                     bool check_file();
                     void header_dump();
                     elf_phdr* get_phdr(long unsigned int index);

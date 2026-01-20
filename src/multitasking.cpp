@@ -12,13 +12,13 @@ Task::Task(GlobalDescriptorTable *gdt, void entrypoint()) {
     cpustate -> esi = 0;
     cpustate -> edi = 0;
     cpustate -> ebp = 0;
-    // cpustate -> es = 0;
-    // cpustate -> fs = 0;
-    // cpustate -> es = 0;
-    // cpustate -> ds = 0;
+    cpustate -> es = gdt -> UserDataSegmentSelector();
+    cpustate -> fs = gdt -> UserDataSegmentSelector();
+    cpustate -> es = gdt -> UserDataSegmentSelector();
+    cpustate -> ds = gdt -> UserDataSegmentSelector();
     // cpustate -> esp = ;
     cpustate -> eip = (uint32_t)entrypoint;
-    cpustate -> cs = gdt -> CodeSegmentSelector();
+    cpustate -> cs = gdt -> UserCodeSegmentSelector();
     // cpustate -> ss = ;
     cpustate -> eflags = 0x202;
 }

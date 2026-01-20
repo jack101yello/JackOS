@@ -22,6 +22,7 @@ SyscallHandler::SyscallHandler(InterruptManager* interruptManager, uint8_t Inter
     graphics = i_graphics;
     terminal = i_terminal;
     desktop = i_desktop;
+    runtime_loop = i_runtime_loop;
 }
 
 SyscallHandler::~SyscallHandler() {
@@ -29,6 +30,7 @@ SyscallHandler::~SyscallHandler() {
 }
 
 void printf(const char* str);
+void printaddr(int n);
 
 uint32_t SyscallHandler::HandleInterrupt(uint32_t esp) {
     CPUState* cpu = (CPUState*)esp;
@@ -47,6 +49,15 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp) {
             if(!graphicsMode) break;
             graphicsMode = false;
             graphics -> SetTextMode();
+            break;
+        case 3: // Get key
+            cpu -> ecx = terminal -> getLastKey();
+            break;
+        case 4: // printaddr
+            printaddr(cpu -> ecx);
+            break;
+        case 5: // quit
+            runtime_loop(desktop, graphics, terminal);
             break;
         default:
             break;

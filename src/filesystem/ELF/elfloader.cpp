@@ -5,8 +5,9 @@ using namespace jackos::common;
 using namespace jackos::filesystem;
 using namespace jackos::filesystem::elf;
 
-Elf_File::Elf_File(Elf_Ehdr* i_header) {
+Elf_File::Elf_File(Elf_Ehdr* i_header, GlobalDescriptorTable* i_gdt) {
     header = i_header;
+    gdt = i_gdt;
 }
 
 bool Elf_File::check_file() {
@@ -64,14 +65,16 @@ struct {
     uint32_t base;
 } __attribute__((packed)) idtr;
 
+extern "C" void enter_usermode(void (*entry_point)());
+
 void Elf_File::run() {
-    asm volatile("sidt %0" : "=m"(idtr));
-    uint32_t eflags;
-    asm volatile(
-        "pushf\n\t"
-        "pop %0"
-        : "=r"(eflags)
-    );
+    // asm volatile("sidt %0" : "=m"(idtr));
+    // uint32_t eflags;
+    // asm volatile(
+    //     "pushf\n\t"
+    //     "pop %0"
+    //     : "=r"(eflags)
+    // );
     for(int i = 0; i < header -> e_phnum; i++) {
         elf_phdr* ph = get_phdr(i);
         if(ph -> type != 1) continue;
@@ -80,13 +83,15 @@ void Elf_File::run() {
     }
     typedef void (*entry_point_t)(void);
     entry_point_t entry = (entry_point_t)header->e_entry;
-    jackos::hardware::Port8Bit kbport(0x21);
-    kbport.Write(kbport.Read() & ~(1 << 1));
-    asm("sti");
-    uint32_t* new_stack = (uint32_t*)0x007FFFF0;
-    asm volatile("mov %0, %%esp" : : "r"(new_stack));
-    entry();
-    asm volatile("sidt %0" : "=m"(idtr));
+    // jackos::hardware::Port8Bit kbport(0x21);
+    // kbport.Write(kbport.Read() & ~(1 << 1));
+    // asm("sti");
+    // uint32_t* new_stack = (uint32_t*)0x007FFFF0;
+    // asm volatile("mov %0, %%esp" : : "r"(new_stack));
+    enter_usermode(entry);
+    printf("mark again\n");
+    // entry();
+    // asm volatile("sidt %0" : "=m"(idtr));
 }
 
 void Elf_File::entry_dump() {

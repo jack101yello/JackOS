@@ -7,14 +7,24 @@ GlobalDescriptorTable::GlobalDescriptorTable()
 : nullSegmentSelector(0, 0, 0),
 unusedSegmentSelector(0, 0, 0),
 codeSegmentSelector(0, 64*1024*1024, 0x9A),
-dataSegmentSelector(0, 64*1024*1024, 0x92)
+dataSegmentSelector(0, 64*1024*1024, 0x92),
+userCodeSegmentSelector(0, 64*1024*1024, 0xFA),
+userDataSegmentSelector(0, 64*1024*1024, 0xF2),
+tssSegmentSelector((uint32_t)&tss, sizeof(tss), 0x89)
 {
+    for(int i = 0; i < sizeof(TaskStateSegment); i++) {
+        ((uint8_t*)&tss)[i] = 0;
+    }
+    tss.ss0 = DataSegmentSelector();
+    tss.esp0 = 0;
     uint32_t i[2];
     i[1] = (uint32_t)this;
     i[0] = sizeof(GlobalDescriptorTable) << 16;
 
     asm volatile("lgdt (%0)": :"p" (((uint8_t *) i) + 2));
     // asm volatile("jmp 0x08"); // Long jump after loading GDT
+    uint16_t tss_selector = TSSSegmentSelector();
+    asm volatile("ltr %0" : : "r"(tss_selector));
 }
 
 GlobalDescriptorTable::~GlobalDescriptorTable() {
@@ -27,6 +37,18 @@ uint16_t GlobalDescriptorTable::DataSegmentSelector() {
 
 uint16_t GlobalDescriptorTable::CodeSegmentSelector() {
     return (uint8_t *)&codeSegmentSelector - (uint8_t*)this;
+}
+
+uint16_t GlobalDescriptorTable::UserDataSegmentSelector() {
+    return ((uint8_t*)&userDataSegmentSelector - (uint8_t*)this) | 3;
+}
+
+uint16_t GlobalDescriptorTable::UserCodeSegmentSelector() {
+    return ((uint8_t*)&userCodeSegmentSelector - (uint8_t*)this) | 3;
+}
+
+uint16_t GlobalDescriptorTable::TSSSegmentSelector() {
+    return (uint8_t*)&tssSegmentSelector - (uint8_t*)this;
 }
 
 GlobalDescriptorTable::SegmentDescriptor::SegmentDescriptor(uint32_t base, uint32_t limit, uint8_t flags) {

@@ -121,7 +121,6 @@ InterruptManager::~InterruptManager() {
 }
 
 void InterruptManager::Activate() {
-
     if(ActiveInterruptManager != 0) {
         ActiveInterruptManager -> Deactivate();
     }

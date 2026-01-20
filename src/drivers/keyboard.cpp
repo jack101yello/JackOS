@@ -11,8 +11,7 @@ KeyboardEventHandler::KeyboardEventHandler() {
 }
 
 void KeyboardEventHandler::OnKeyDown(char c) {
-    char foo[] = {c, '\0'};
-    printf(foo);
+    
 }
 
 void KeyboardEventHandler::OnKeyUp(char) {

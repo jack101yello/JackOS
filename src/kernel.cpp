@@ -138,12 +138,30 @@ extern "C" void callConstructors() {
 }
 
 extern "C" void* heap;
+extern "C" void enter_usermode();
 
 void runtime_loop(Desktop* desktop, VideoGraphicsArray* graphics, jackos::terminal::Terminal* terminal) {
+    terminal -> initialize();
     for(;;) {
-        desktop -> Draw(graphics);
-        // terminal -> draw();
-        graphics -> DrawFrame(SCREEN_WIDTH, SCREEN_HEIGHT);
+        terminal -> service();
+        asm("hlt");
+    }
+}
+
+char sys_get_key() {
+    char key;
+    asm volatile(
+        "int $0x80"
+        : "=c"(key)
+        : "a" (3)
+    );
+    return key;
+}
+
+extern "C" void usermode_task() {
+    asm("int $0x80" : : "a"(0), "c"("Hello from usermode!\n"));
+    for(;;) {
+        printfhex(sys_get_key());
     }
 }
 
@@ -189,8 +207,8 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     // drvManager.AddDriver(&mouse);
     printf("\tInitiating keyboard.\n");
     KeyboardEventHandler kbhandler;
-    KeyboardDriver keyboard(&interrupts, &kbhandler);
-    drvManager.AddDriver(&keyboard);
+    // KeyboardDriver keyboard(&interrupts, &kbhandler);
+    // drvManager.AddDriver(&keyboard);
 
     printf("\tInitiating PIT.\n");
     PITEventHandler system_clock;
@@ -205,8 +223,9 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     FloppyDriver floppy_driver(&interrupts, &system_clock);
     drvManager.AddDriver(&floppy_driver);
 
-    printf("Activating drivers.\n");
-    drvManager.ActivateAll();
+    jackos::terminal::Terminal terminal(multiboot_structure, &gdt);
+    KeyboardDriver keyboard_driver(&interrupts, &terminal);
+    drvManager.AddDriver(&keyboard_driver);
 
     interrupts.Activate();
 
@@ -265,16 +284,15 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     // loaded_program.header_dump();
     // loaded_program.run();
 
-    jackos::terminal::Terminal terminal(multiboot_structure);
-    KeyboardDriver keyboard_driver(&interrupts, &terminal);
-
     printf("Setting up syscalls.\n");
     jackos::gui::Desktop desktop(SCREEN_WIDTH, SCREEN_HEIGHT, 0x00, 0x00, 0xA8);
     SyscallHandler syscalls(&interrupts, 0x80, &vga, &terminal, &desktop, &runtime_loop);
 
     drvManager.ActivateAll();
+    
+    static uint8_t kernel_stack[8192] __attribute__((aligned(16)));
+    gdt.tss.esp0 = (uint32_t)(kernel_stack + sizeof(kernel_stack));
+    gdt.tss.ss0 = gdt.DataSegmentSelector();
 
-    terminal.initialize();
-
-    for(;;);
+    runtime_loop(&desktop, &vga, &terminal);
 }

@@ -2,11 +2,12 @@ binpath = /home/jack/opt/cross/bin
 sysroot = /home/jack/JackOS/sysroot
 
 GPPPARAMS = -g -Iinclude -Ilibc/include -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -fcheck-new
-ASPARAMS = -32
+ASPARAMS = -32 -g
 LDPARAMS = -melf_i386 -z noexecstack
 
 objects = obj/loader.o \
 		  obj/gdt.o \
+		  obj/usermode.o \
 		  obj/memorymanagement.o \
 		  obj/drivers/driver.o \
 		  obj/hardware/port.o \
@@ -69,12 +70,12 @@ jackos.iso: jackoskernel.bin initrd.elf
 	cp initrd.elf isodir/boot/initrd.elf
 	# cp ~/JackOSPrograms/Program1/program1.elf isodir/boot/program1.elf
 	# cp ~/JackOSPrograms/GraphicsProgram/graphics.elf isodir/boot/graphics.elf
-	cp ~/JackOSPrograms/PrintProg/printprog.elf isodir/boot/printprog.elf
+	cp ~/JackOSPrograms/TestProgram/testprogram.elf isodir/boot/testprogram.elf
 	echo 'menuentry "JackOS" {' > isodir/boot/grub/grub.cfg
 	echo '	multiboot /boot/jackoskernel.bin' >> isodir/boot/grub/grub.cfg
 	# echo '	module /boot/graphics.elf graphics' >> isodir/boot/grub/grub.cfg
 	# echo '	module /boot/program1.elf program' >> isodir/boot/grub/grub.cfg
-	echo '	module /boot/printprog.elf printprog' >> isodir/boot/grub/grub.cfg
+	echo '	module /boot/testprogram.elf kbtest' >> isodir/boot/grub/grub.cfg
 	echo '}' >> isodir/boot/grub/grub.cfg
 	grub-mkrescue -o jackos.iso isodir
 

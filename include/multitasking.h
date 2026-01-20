@@ -19,11 +19,10 @@ namespace jackos {
         jackos::common::uint32_t interrupt;
         jackos::common::uint32_t error;
 
-        // jackos::common::uint32_t gs;
-        // jackos::common::uint32_t fs;
-        // jackos::common::uint32_t es;
-        // jackos::common::uint32_t ds;
-
+        jackos::common::uint32_t gs;
+        jackos::common::uint32_t fs;
+        jackos::common::uint32_t es;
+        jackos::common::uint32_t ds;
 
         jackos::common::uint32_t eip;
         jackos::common::uint32_t cs;

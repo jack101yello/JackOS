@@ -6,16 +6,22 @@ using namespace jackos::terminal;
 
 extern void printf(const char* msg);
 
-jackos::terminal::Terminal::Terminal(multiboot* i_mb) {
+extern "C" void enter_usermode();
+
+jackos::terminal::Terminal::Terminal(multiboot* i_mb, GlobalDescriptorTable* i_gdt) {
     mb = i_mb;
-    active = true;
     graphics = nullptr;
     system_clock = nullptr;
     buffer_len = 0;
-
+    gdt = i_gdt;
+    command_pending = false;
+    active = false;
 }
 
 void Terminal::initialize() {
+    active = true;
+    buffer[0] = '\0';
+    buffer_len = 0;
     command_clear();
     newline();
 }
@@ -30,10 +36,13 @@ void Terminal::newline() {
 }
 
 void Terminal::OnKeyDown(char key) {
+    last_key = key;
+    if(!active) return;
     switch(key) {
         case '\n':
-            parse_command();
-            prompt();
+            command_pending = true;
+            // parse_command();
+            // prompt();
             break;
         case 0x0E: // Backspace
             if(buffer_len > 0) {
@@ -50,6 +59,13 @@ void Terminal::OnKeyDown(char key) {
             printf(foo);
             break;
     }
+}
+
+void Terminal::service() {
+    if(!command_pending) return;
+    command_pending = false;
+    parse_command();
+    prompt();
 }
 
 void Terminal::parse_command() {
@@ -98,6 +114,7 @@ void Terminal::parse_command() {
     else {
         printf("Unknown command: ");
         printf(argv[0]);
+        printf("\nRun [help] to see commands.\n");
     }
     
     buffer[0] = '\0';

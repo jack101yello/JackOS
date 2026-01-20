@@ -10,8 +10,9 @@ extern void clear_screen();
 void Terminal::command_help(const char* argument) {
     if(jackos::libc::strcmp(argument, "") == 0) {
         printf("Valid commands:\n");
-        printf("help    clear");
-        printf("\nAlso use \"help + command\"\n");
+        printf("help    clear\n");
+        printf("list    run\n");
+        printf("Also use \"help + command\"\n");
     }
     else if(jackos::libc::strcmp(argument, "help") == 0) {
         printf("You think you're smart, huh?\n");
@@ -28,7 +29,7 @@ void Terminal::command_help(const char* argument) {
     else {
         printf("Unknown command: ");
         printf(argument);
-        printf("\n\n");
+        printf("\n");
     }
 }
 
@@ -47,10 +48,14 @@ void Terminal::list_files() {
     }
 }
 
+extern "C" void enter_usermode();
+
 // Run an ELF executable
 void Terminal::run_file() {
     multiboot_module_t* elf_modules = (multiboot_module_t*) mb -> mods_addr;
-    jackos::filesystem::elf::Elf_File elf_program((Elf_Ehdr*)elf_modules[0].mod_start);
+    jackos::filesystem::elf::Elf_File elf_program((Elf_Ehdr*)elf_modules[0].mod_start, gdt);
     if(!elf_program.check_file()) return;
+    active = false;
     elf_program.run();
+    printf("mark\n");
 }

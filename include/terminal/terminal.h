@@ -10,6 +10,7 @@
 #include <multiboot.h>
 #include <filesystem/ELF/elfheader.h>
 #include <filesystem/ELF/elfloader.h>
+#include <multitasking.h>
 
 #define TERMINAL_WIDTH 33
 
@@ -31,15 +32,18 @@ namespace jackos {
                 void run_file();
                 char last_key;
                 void prompt();
+                jackos::GlobalDescriptorTable* gdt;
+                volatile bool command_pending;
             
             public:
-                Terminal(multiboot* i_mb);
+                Terminal(multiboot* i_mb, jackos::GlobalDescriptorTable* i_gdt);
                 void draw();
                 void OnKeyDown(char);
                 void parse_command();
                 void print(const char* message);
                 char getLastKey() { return last_key; }
                 void initialize();
+                void service();
         };
     }
 }
