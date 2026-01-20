@@ -34,31 +34,45 @@ void printaddr(int n);
 
 uint32_t SyscallHandler::HandleInterrupt(uint32_t esp) {
     CPUState* cpu = (CPUState*)esp;
-    switch(cpu -> eax) {
-        case 0: // Print
+    switch((syscall_label)cpu -> eax) {
+        case PRINT: // Print
             printf((const char*)(cpu -> ecx));
             break;
-        case 1: // Enter graphics mode
+        case ENTER_GRAPHICS_MODE: // Enter graphics mode
             if(graphicsMode || graphics == nullptr) break;
             graphicsMode = true;
             graphics -> SetMode(SCREEN_WIDTH, SCREEN_HEIGHT, COLOR_DEPTH);
             desktop -> Draw(graphics);
             graphics -> DrawFrame(SCREEN_WIDTH, SCREEN_HEIGHT);
             break;
-        case 2: // Exit graphics mode
+        case EXIT_GRAPHICS_MODE: // Exit graphics mode
             if(!graphicsMode) break;
             graphicsMode = false;
             graphics -> SetTextMode();
             break;
-        case 3: // Get key
+        case DRAW_FRAME:
+            graphics -> DrawFrame(SCREEN_WIDTH, SCREEN_HEIGHT);
+            break;
+        case GET_KEY: // Get key
             cpu -> ecx = terminal -> getLastKey();
             break;
-        case 4: // printaddr
+        case PRINT_ADDR: // printaddr
             printaddr(cpu -> ecx);
             break;
-        case 5: // quit
+        case QUIT: // quit
+            if(graphicsMode) {
+                graphicsMode = false;
+                graphics -> SetTextMode();
+            }
             runtime_loop(desktop, graphics, terminal);
             break;
+        case PUT_PIXEL:{
+            int32_t putx = (int32_t)cpu -> ebx;
+            int32_t puty = (int32_t)cpu -> ecx;
+            jackos::drivers::COLOR_CODE color = (jackos::drivers::COLOR_CODE)cpu -> edx;
+            graphics -> PutPixel(putx, puty, color);
+            break;
+        }
         default:
             break;
     }

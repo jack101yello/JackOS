@@ -10,6 +10,17 @@
 #include <gui/window.h>
 
 namespace jackos {
+    enum syscall_label {
+        PRINT = 0,
+        ENTER_GRAPHICS_MODE = 1,
+        EXIT_GRAPHICS_MODE = 2,
+        GET_KEY = 3,
+        PRINT_ADDR = 4,
+        QUIT = 5,
+        PUT_PIXEL = 6,
+        DRAW_FRAME = 7
+    };
+
     class SyscallHandler : public jackos::hardware::InterruptHandler {
         private:
             bool graphicsMode; // Indicates whether the current program is using graphical mode or text mode (terminal)
