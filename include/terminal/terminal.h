@@ -39,6 +39,7 @@ namespace jackos {
                 Terminal(multiboot* i_mb, jackos::GlobalDescriptorTable* i_gdt);
                 void draw();
                 void OnKeyDown(char);
+                void OnKeyUp(char);
                 void parse_command();
                 void print(const char* message);
                 char getLastKey() { return last_key; }

@@ -61,6 +61,10 @@ void Terminal::OnKeyDown(char key) {
     }
 }
 
+void Terminal::OnKeyUp(char key) {
+    last_key = '\0';
+}
+
 void Terminal::service() {
     if(!command_pending) return;
     command_pending = false;

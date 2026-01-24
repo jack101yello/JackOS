@@ -4,7 +4,8 @@ using namespace jackos;
 using namespace jackos::common;
 using namespace jackos::hardware;
 
-void printf(const char* str);
+extern void printf(const char* str);
+extern void printaddr(int n);
 
 InterruptHandler::InterruptHandler(uint8_t interruptNumber, InterruptManager* interruptManager) {
     this->interruptNumber = interruptNumber;
@@ -198,6 +199,15 @@ uint32_t InterruptManager::doHandleInterrupt(uint8_t interruptNumber, uint32_t e
         msg[26] = hex[(interruptNumber >> 4) & 0x0F];
         msg[27] = hex[interruptNumber & 0x0F];
         printf(msg);
+    }
+    if(interruptNumber == 0x0D) {
+        printf("esp -> eip: ");
+        printaddr(((CPUState*)esp) -> eip);
+        printf("  cs: ");
+        printaddr(((CPUState*)esp) -> cs);
+        printf("  eflags: ");
+        printaddr(((CPUState*)esp) -> eflags);
+        printf("\n");
     }
 
     if(interruptNumber == hardwareoffset) { // PIT

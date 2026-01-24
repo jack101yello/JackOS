@@ -1,4 +1,5 @@
 binpath = /home/jack/opt/cross/bin
+target = i386-jackos
 sysroot = /home/jack/JackOS/sysroot
 
 GPPPARAMS = -g -Iinclude -Ilibc/include -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -fcheck-new
@@ -46,14 +47,14 @@ libk_objs = \
 
 obj/%.o: src/%.cpp
 	mkdir -p $(@D)
-	$(binpath)/i386-elf-g++ $(GPPPARAMS) -o $@ -c $<
+	$(binpath)/$(target)-g++ $(GPPPARAMS) -o $@ -c $<
 
 obj/%.o: src/%.s
 	mkdir -p $(@D)
-	$(binpath)/i386-elf-as $(ASPARAMS) -o $@ $<
+	$(binpath)/$(target)-as $(ASPARAMS) -o $@ $<
 
 libc/%.o: libc/%.c
-	$(binpath)/i386-elf-gcc --sysroot=$(sysroot) -Ilibc/include -ffreestanding -nostdlib -O2 -o $@ $<
+	$(binpath)/$(target)-gcc --sysroot=$(sysroot) -Ilibc/include -ffreestanding -nostdlib -O2 -o $@ $<
 
 jackoskernel.bin: linker.ld $(objects)
 	ld $(LDPARAMS) -T $< -o $@ $(objects)
@@ -70,12 +71,12 @@ jackos.iso: jackoskernel.bin initrd.elf
 	cp initrd.elf isodir/boot/initrd.elf
 	# cp ~/JackOSPrograms/Program1/program1.elf isodir/boot/program1.elf
 	# cp ~/JackOSPrograms/GraphicsProgram/graphics.elf isodir/boot/graphics.elf
-	cp ~/JackOSPrograms/TestProgram/testprogram.elf isodir/boot/testprogram.elf
+	cp ~/JackOS-Programs/Pong/pong.elf isodir/boot/pong.elf
 	echo 'menuentry "JackOS" {' > isodir/boot/grub/grub.cfg
 	echo '	multiboot /boot/jackoskernel.bin' >> isodir/boot/grub/grub.cfg
 	# echo '	module /boot/graphics.elf graphics' >> isodir/boot/grub/grub.cfg
 	# echo '	module /boot/program1.elf program' >> isodir/boot/grub/grub.cfg
-	echo '	module /boot/testprogram.elf kbtest' >> isodir/boot/grub/grub.cfg
+	echo '	module /boot/pong.elf Pong' >> isodir/boot/grub/grub.cfg
 	echo '}' >> isodir/boot/grub/grub.cfg
 	grub-mkrescue -o jackos.iso isodir
 
