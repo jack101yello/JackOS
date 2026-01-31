@@ -16,6 +16,8 @@
 
 namespace jackos {
     namespace drivers {
+        // static char dmabuf[512] __attribute__((aligned(512))) __attribute__((section(".dma_buffer")));
+
         enum floppy_register {
             FLOPPY_DOR = 2, // Digital output register
             FLOPPY_MSR = 4, // Master status register
@@ -49,10 +51,12 @@ namespace jackos {
                 jackos::drivers::PITEventHandler* system_clock;
                 int motor_ticks;
                 int motor_state;
+                // char* dmabuf;
                 char dmabuf[FLOPPY_DMA_LEN] __attribute__((aligned(0x8000)));
                 jackos::filesystem::FAT12Header* fatheader;
-                jackos::filesystem::FAT12DirectoryEntry file;
+                jackos::filesystem::FAT12DirectoryEntry files[8];
                 jackos::common::uint8_t fat[FAT_SIZE];
+                int file_count;
 
             public:
                 FloppyDriver(jackos::hardware::InterruptManager* manager, jackos::drivers::PITEventHandler* i_system_clock);
@@ -74,9 +78,10 @@ namespace jackos {
                 void ParseFATHeader() { fatheader = (jackos::filesystem::FAT12Header*) dmabuf; }
                 void read_root_directory();
                 void load_file(jackos::common::uint16_t start_cluster, jackos::common::uint32_t size, jackos::common::uint8_t* destination);
-                jackos::filesystem::FAT12DirectoryEntry get_file() { return file; }
+                jackos::filesystem::FAT12DirectoryEntry get_file(int index) { return files[index]; }
                 jackos::common::uint16_t fat12_get_entry(jackos::common::uint16_t cluster);
                 jackos::common::uint8_t* get_fat() { return fat; }
+                int get_file_count() { return file_count; }
         };
     }
 }

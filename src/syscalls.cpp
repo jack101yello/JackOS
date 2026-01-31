@@ -53,9 +53,11 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp) {
         case DRAW_FRAME:
             graphics -> DrawFrame(SCREEN_WIDTH, SCREEN_HEIGHT);
             break;
-        case GET_KEY: // Get key
-            cpu -> ecx = terminal -> getLastKey();
+        case CHECK_KEY: {// Get key
+            char key = (char)cpu -> ebx;
+            cpu -> ecx = terminal -> check_key(key);
             break;
+        }
         case PRINT_ADDR: // printaddr
             printaddr(cpu -> ecx);
             break;

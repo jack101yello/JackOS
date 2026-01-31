@@ -3,6 +3,7 @@
 using namespace jackos;
 using namespace jackos::common;
 using namespace jackos::terminal;
+using namespace jackos::drivers;
 
 extern void printf(const char* msg);
 extern void clear_screen();
@@ -57,5 +58,48 @@ void Terminal::run_file() {
     if(!elf_program.check_file()) return;
     active = false;
     elf_program.run();
-    printf("mark\n");
+}
+
+void Terminal::drun_file(const char* filename) {
+    printf("Loading...\n");
+
+    floppy_driver -> motor(FLOPPY_BASE, MOTOR_ON);
+    floppy_driver -> dma_init(DIR_READ);
+    floppy_driver -> do_track(FLOPPY_BASE, 0, DIR_READ);
+    floppy_driver -> ParseFATHeader();
+    floppy_driver -> read_root_directory();
+    system_clock -> wait(1);
+    jackos::filesystem::FAT12DirectoryEntry file;
+    bool file_found = false;
+    for(int i = 0; i < floppy_driver->get_file_count(); i++) {
+        file = floppy_driver->get_file(i);
+        char* tmp_filename = file.name;
+        tmp_filename[8] = '\0';
+        for(int i = 0; i < 8; i++) {
+            if(tmp_filename[i] == ' ') {
+                tmp_filename[i] = '\0';
+                break;
+            }
+        }
+        printf(tmp_filename);
+        if(jackos::libc::strcmp(filename, tmp_filename) == 0) {
+            file_found = true;
+            printf("File found: size=");
+            printaddr(file.fileSize);
+            printf(" start cluster=");
+            printaddr(file.firstCluster);
+            printf("\n");
+            break;
+        }
+    }
+    if(!file_found) {
+        printf("File not found.\n");
+        return;
+    }
+
+    uint8_t* file_ptr = (uint8_t*)0x10000;
+    floppy_driver -> load_file(file.firstCluster, file.fileSize, file_ptr);
+    floppy_driver -> motor(FLOPPY_BASE, MOTOR_OFF);
+    jackos::filesystem::elf::Elf_File loaded_program((Elf_Ehdr*)file_ptr, gdt);
+    loaded_program.run();
 }

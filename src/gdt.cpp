@@ -8,15 +8,16 @@ GlobalDescriptorTable::GlobalDescriptorTable()
 unusedSegmentSelector(0, 0, 0),
 codeSegmentSelector(0, 64*1024*1024, 0x9A),
 dataSegmentSelector(0, 64*1024*1024, 0x92),
-userCodeSegmentSelector(0, 64*1024*1024, 0xFA),
-userDataSegmentSelector(0, 64*1024*1024, 0xF2),
+userCodeSegmentSelector(0, 0xFFFFFFFF, 0xFA),
+userDataSegmentSelector(0, 0xFFFFFFFF, 0xF2),
 tssSegmentSelector((uint32_t)&tss, sizeof(tss), 0x89)
 {
     for(int i = 0; i < sizeof(TaskStateSegment); i++) {
         ((uint8_t*)&tss)[i] = 0;
     }
+    static uint8_t kernel_stack[0x4000]; // 16 kB kernel stack
     tss.ss0 = DataSegmentSelector();
-    tss.esp0 = 0;
+    tss.esp0 = (uint32_t)(kernel_stack + sizeof(kernel_stack));
     uint32_t i[2];
     i[1] = (uint32_t)this;
     i[0] = sizeof(GlobalDescriptorTable) << 16;
@@ -96,4 +97,9 @@ uint32_t GlobalDescriptorTable::SegmentDescriptor::Limit() {
     }
 
     return result;
+}
+
+void GlobalDescriptorTable::SetKernelStack(uint32_t esp0) {
+    tss.esp0 = esp0;
+    tss.ss0 = DataSegmentSelector();
 }

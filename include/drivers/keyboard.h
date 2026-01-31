@@ -12,6 +12,7 @@ namespace jackos {
             public:
                 KeyboardEventHandler();
 
+                bool keyboard_statemap[0xFF];
                 virtual void OnKeyDown(char);
                 virtual void OnKeyUp(char);
         };

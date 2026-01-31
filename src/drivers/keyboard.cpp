@@ -4,7 +4,8 @@ using namespace jackos::common;
 using namespace jackos::drivers;
 using namespace jackos::hardware;
 
-void printf(const char* str);
+extern void printf(const char* str);
+extern void printfhex(int n);
 
 KeyboardEventHandler::KeyboardEventHandler() {
 
@@ -53,7 +54,7 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp) {
     static bool Shift = false;
     if((key & 128) != 128) {
         switch(key) {
-            case 0x01: break; // esc
+            case 0x01: handler->OnKeyDown(0x1); break; // esc
             case 0x02: if(Shift) handler->OnKeyDown('!'); else handler->OnKeyDown('1'); break;
             case 0x03: if(Shift) handler->OnKeyDown('@'); else handler->OnKeyDown('2'); break;
             case 0x04: if(Shift) handler->OnKeyDown('#'); else handler->OnKeyDown('3'); break;
@@ -106,6 +107,10 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp) {
             case 0x34: if(Shift) handler->OnKeyDown('>'); else handler->OnKeyDown('.'); break;
             case 0x35: if(Shift) handler->OnKeyDown('?'); else handler->OnKeyDown('/'); break;
             case 0x39: handler->OnKeyDown(' '); break;
+            case 0x48: handler->OnKeyDown(0x48); break; // Up arrow key
+            case 0x4B: handler->OnKeyDown(0x4B); break; // Left arrow key
+            case 0x50: handler->OnKeyDown(0x50); break; // Down arrow key
+            case 0x4D: handler->OnKeyDown(0x4D); break; // Right arrow key
 
             case 0x2A: case 0x36: Shift = true; break; // Shift keys
 
@@ -177,10 +182,14 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp) {
             case 0x34: if(Shift) handler->OnKeyUp('>'); else handler->OnKeyUp('.'); break;
             case 0x35: if(Shift) handler->OnKeyUp('?'); else handler->OnKeyUp('/'); break;
             case 0x39: handler->OnKeyUp(' '); break;
+            case 0x48: handler->OnKeyUp(0x48); break; // Up arrow key
+            case 0x4B: handler->OnKeyUp(0x4B); break; // Left arrow key
+            case 0x50: handler->OnKeyUp(0x50); break; // Down arrow key
+            case 0x4D: handler->OnKeyUp(0x4D); break; // Right arrow key
 
             case 0x45: break; // Numlock
             case 0xFA: break; // ACK
-            case 0xAA: case 0xB6: Shift = false; break; // Release shift keys
+            case 0x2A: case 0x36: Shift = false; break; // Release shift keys
         }
     }
     return esp;

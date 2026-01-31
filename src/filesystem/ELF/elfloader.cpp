@@ -75,9 +75,19 @@ void Elf_File::run() {
     //     "pop %0"
     //     : "=r"(eflags)
     // );
+    printf("Loading ELF segments:\n");
     for(int i = 0; i < header -> e_phnum; i++) {
         elf_phdr* ph = get_phdr(i);
         if(ph -> type != 1) continue;
+        printf("Segment: ");
+        printfhex(i);
+        printf(": src=");
+        printaddr((uint32_t)header+ph->offset);
+        printf(" dst=");
+        printaddr(ph->vaddr);
+        printf(" size=");
+        printaddr(ph->filesz);
+        printf("\n");
         memcpy((uint8_t*)ph->vaddr, (uint8_t*)header + ph->offset, ph->filesz);
         memset((uint8_t*)(ph->vaddr + ph->filesz), 0, ph->memsz - ph->filesz);
     }
@@ -88,8 +98,54 @@ void Elf_File::run() {
     // asm("sti");
     // uint32_t* new_stack = (uint32_t*)0x007FFFF0;
     // asm volatile("mov %0, %%esp" : : "r"(new_stack));
+    printf("Entry point: ");
+    printaddr(header -> e_entry);
+    printf("\nFirst 16 bytes at entry: ");
+    for(int i = 0; i < 16; i++) {
+        printf(" ");
+        printfhex(*(uint8_t*)(header -> e_entry + i));
+    }
+    printf("\n");
+    printf("Calling enter_usermode wtith entry=");
+    printaddr((uint32_t)entry);
+    printf("\n");
+    uint16_t cs, ds, ss;
+    asm volatile("mov %%cs, %0" : "=r"(cs));
+    asm volatile("mov %%ds, %0" : "=r"(ds));
+    asm volatile("mov %%ss, %0" : "=r"(ss));
+    printf("Before enter_usermode: CS=");
+    printfhex(cs);
+    printf(" DS=");
+    printfhex(ds);
+    printf(" SS=");
+    printfhex(ss);
+    printf("\n");
+    printf("GDT User Code Segment (0x23):\n");
+    uint8_t* user_code = (uint8_t*)&gdt->userCodeSegmentSelector;
+    printf("  Bytes: ");
+    for(int i = 0; i < 8; i++) {
+        printfhex(user_code[i]);
+        printf(" ");
+    }
+    printf("\n  Base: ");
+    printaddr(gdt->userCodeSegmentSelector.Base());
+    printf("\n  Limit: ");
+    printaddr(gdt->userCodeSegmentSelector.Limit());
+    printf("\n");
+
+    printf("GDT User Data Segment (0x2B):\n");
+    uint8_t* user_data = (uint8_t*)&gdt->userDataSegmentSelector;
+    printf("  Bytes: ");
+    for(int i = 0; i < 8; i++) {
+        printfhex(user_data[i]);
+        printf(" ");
+    }
+    printf("\n  Base: ");
+    printaddr(gdt->userDataSegmentSelector.Base());
+    printf("\n  Limit: ");
+    printaddr(gdt->userDataSegmentSelector.Limit());
+    printf("\n");
     enter_usermode(entry);
-    printf("mark again\n");
     // entry();
     // asm volatile("sidt %0" : "=m"(idtr));
 }

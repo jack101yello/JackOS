@@ -165,6 +165,17 @@ extern "C" void usermode_task() {
     }
 }
 
+extern "C" void print_stack_debug(uint32_t* stack) {
+    printf("Stack before iret:\n");
+    for(int i = 0; i < 5; i++) {
+        printf(" [");
+        printfhex(i);
+        printf("]: ");
+        printaddr(stack[i]);
+        printf("\n");
+    }
+}
+
 extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magicnumber) {
     // clear_screen();
 
@@ -223,76 +234,20 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     FloppyDriver floppy_driver(&interrupts, &system_clock);
     drvManager.AddDriver(&floppy_driver);
 
-    jackos::terminal::Terminal terminal(multiboot_structure, &gdt);
+    jackos::terminal::Terminal terminal(multiboot_structure, &gdt, &floppy_driver, &system_clock);
     KeyboardDriver keyboard_driver(&interrupts, &terminal);
     drvManager.AddDriver(&keyboard_driver);
 
+    static uint8_t kernel_stack[8192] __attribute__((aligned(16)));
+    gdt.SetKernelStack((uint32_t)(kernel_stack + sizeof(kernel_stack)));
+
     interrupts.Activate();
-
-    // // printf("Setting Up Ramdisk.\n");
-    // uint32_t initrd_location = *((uint32_t*)multiboot_structure->mods_addr);
-    // uint32_t initrd_end = *(uint32_t*)(multiboot_structure->mods_addr+4);
-    // /* There is a risk of this being overwritten, in which case we should think about
-    // moving the heap to ensure that it doesn't intersect this. */
-    // fs_root = initialize_initrd(initrd_location);
-
-    // int i = 0;
-    // struct dirent* node = 0;
-    // while((node = readdir_fs(fs_root, i)) != 0) {
-    //     printf("Found node: ");
-    //     printf(node -> name);
-    //     fs_node_t* fsnode = finddir_fs(fs_root, node -> name);
-    //     if((fsnode -> flags % 0x7) == FS_DIRECTORY) {
-    //         printf(" (directory)");
-    //     }
-    //     printf("\n");
-    //     ++i;
-    // }
-
-    // printf("Loading program.\n");
-    // jackos::filesystem::elf::Elf_File hello_program((Elf_Ehdr*)elf_modules[0].mod_start);
-    // if(!hello_program.check_file()) {
-    //     printf("Invalid ELF file.\n");
-    // }
-    // else {
-    //     hello_program.run();
-    // }
-
-    // jackos::filesystem::elf::Elf_File p1((Elf_Ehdr*)elf_modules[0].mod_start);
-    // jackos::filesystem::elf::Elf_File p2((Elf_Ehdr*)elf_modules[1].mod_start);
-    // p1.run();
-    // p2.run();
-
-    // printf("Initiating floppy test...\n");
-    // if(floppy_driver.floppy_reset(FLOPPY_BASE) == 0) {
-    //     printf("Floppy reset and calibrated.\n");
-    // }
-    // else {
-    //     printf("There was an issue calibrating the floppy...\n");
-    //     for(;;);
-    // }
-
-    // floppy_driver.dma_init(DIR_READ);
-    // floppy_driver.do_track(FLOPPY_BASE, 0, DIR_READ);
-    // floppy_driver.ParseFATHeader();
-    // floppy_driver.read_root_directory();
-
-    // FAT12DirectoryEntry program_file = floppy_driver.get_file();
-    // uint8_t* file = (uint8_t*)0x10000;
-    // floppy_driver.load_file(program_file.firstCluster, program_file.fileSize, file);
-    // jackos::filesystem::elf::Elf_File loaded_program((Elf_Ehdr*)file);
-    // loaded_program.header_dump();
-    // loaded_program.run();
 
     printf("Setting up syscalls.\n");
     jackos::gui::Desktop desktop(SCREEN_WIDTH, SCREEN_HEIGHT, 0x00, 0x00, 0xA8);
     SyscallHandler syscalls(&interrupts, 0x80, &vga, &terminal, &desktop, &runtime_loop);
 
     drvManager.ActivateAll();
-    
-    static uint8_t kernel_stack[8192] __attribute__((aligned(16)));
-    gdt.tss.esp0 = (uint32_t)(kernel_stack + sizeof(kernel_stack));
-    gdt.tss.ss0 = gdt.DataSegmentSelector();
 
     runtime_loop(&desktop, &vga, &terminal);
 }

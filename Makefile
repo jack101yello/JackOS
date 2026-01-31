@@ -2,7 +2,7 @@ binpath = /home/jack/opt/cross/bin
 target = i386-jackos
 sysroot = /home/jack/JackOS/sysroot
 
-GPPPARAMS = -g -Iinclude -Ilibc/include -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -fcheck-new
+GPPPARAMS = -g -Iinclude -ffreestanding -Ilibc/include -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -fcheck-new
 ASPARAMS = -32 -g
 LDPARAMS = -melf_i386 -z noexecstack
 
@@ -57,7 +57,7 @@ libc/%.o: libc/%.c
 	$(binpath)/$(target)-gcc --sysroot=$(sysroot) -Ilibc/include -ffreestanding -nostdlib -O2 -o $@ $<
 
 jackoskernel.bin: linker.ld $(objects)
-	ld $(LDPARAMS) -T $< -o $@ $(objects)
+	$(binpath)/$(target)-ld $(LDPARAMS) -T $< -o $@ $(objects)
 
 initrd.elf:
 	gcc Initrd/makeinitrd.c -o makeinitrd.out
@@ -69,14 +69,8 @@ jackos.iso: jackoskernel.bin initrd.elf
 	mkdir -p isodir/boot/grub
 	cp $< isodir/boot/jackoskernel.bin
 	cp initrd.elf isodir/boot/initrd.elf
-	# cp ~/JackOSPrograms/Program1/program1.elf isodir/boot/program1.elf
-	# cp ~/JackOSPrograms/GraphicsProgram/graphics.elf isodir/boot/graphics.elf
-	cp ~/JackOS-Programs/Pong/pong.elf isodir/boot/pong.elf
 	echo 'menuentry "JackOS" {' > isodir/boot/grub/grub.cfg
 	echo '	multiboot /boot/jackoskernel.bin' >> isodir/boot/grub/grub.cfg
-	# echo '	module /boot/graphics.elf graphics' >> isodir/boot/grub/grub.cfg
-	# echo '	module /boot/program1.elf program' >> isodir/boot/grub/grub.cfg
-	echo '	module /boot/pong.elf Pong' >> isodir/boot/grub/grub.cfg
 	echo '}' >> isodir/boot/grub/grub.cfg
 	grub-mkrescue -o jackos.iso isodir
 
@@ -93,10 +87,10 @@ install-libc: libk-includes libk-objects
 	# $(binpath)/i386-elf-ar rcs libc/libk.a 
 
 run: jackos.iso
-	qemu-system-i386 -cdrom jackos.iso -boot d -m 512
+	qemu-system-i386 -cdrom jackos.iso -drive file="/mnt/c/users/jack/desktop/JackOS Program Floppies/pong.vfd",format=raw,if=floppy -boot d -m 512
 
 debug: jackos.iso
-	qemu-system-i386 -s -S -cdrom jackos.iso
+	qemu-system-i386 -s -S -cdrom jackos.iso -drive file="/mnt/c/users/jack/desktop/JackOS Program Floppies/pong.vfd",format=raw,if=floppy -boot d
 
 .PHONY: clean install install-libc run
 clean: 

@@ -14,7 +14,7 @@ namespace jackos {
         PRINT = 0,
         ENTER_GRAPHICS_MODE = 1,
         EXIT_GRAPHICS_MODE = 2,
-        GET_KEY = 3,
+        CHECK_KEY = 3,
         PRINT_ADDR = 4,
         QUIT = 5,
         PUT_PIXEL = 6,

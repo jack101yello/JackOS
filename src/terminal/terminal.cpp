@@ -3,19 +3,21 @@
 using namespace jackos;
 using namespace jackos::common;
 using namespace jackos::terminal;
+using namespace jackos::drivers;
 
 extern void printf(const char* msg);
 
 extern "C" void enter_usermode();
 
-jackos::terminal::Terminal::Terminal(multiboot* i_mb, GlobalDescriptorTable* i_gdt) {
+jackos::terminal::Terminal::Terminal(multiboot* i_mb, GlobalDescriptorTable* i_gdt, FloppyDriver* i_floppy_driver, PITEventHandler* i_system_clock) {
     mb = i_mb;
     graphics = nullptr;
-    system_clock = nullptr;
+    system_clock = i_system_clock;
     buffer_len = 0;
     gdt = i_gdt;
     command_pending = false;
     active = false;
+    floppy_driver = i_floppy_driver;
 }
 
 void Terminal::initialize() {
@@ -24,6 +26,9 @@ void Terminal::initialize() {
     buffer_len = 0;
     command_clear();
     newline();
+    for(int i = 0; i < 0xFF; i++) {
+        keyboard_statemap[i] = false;
+    }
 }
 
 void Terminal::prompt() {
@@ -36,7 +41,7 @@ void Terminal::newline() {
 }
 
 void Terminal::OnKeyDown(char key) {
-    last_key = key;
+    keyboard_statemap[(int)key] = true;
     if(!active) return;
     switch(key) {
         case '\n':
@@ -62,7 +67,7 @@ void Terminal::OnKeyDown(char key) {
 }
 
 void Terminal::OnKeyUp(char key) {
-    last_key = '\0';
+    keyboard_statemap[(int)key] = false;
 }
 
 void Terminal::service() {
@@ -115,6 +120,21 @@ void Terminal::parse_command() {
     else if(jackos::libc::strcmp(argv[0], "run") == 0) {
         run_file();
     }
+    else if(jackos::libc::strcmp(argv[0], "dlist") == 0) {
+        printf("Reading disk...\n");
+        floppy_driver -> dma_init(DIR_READ);
+        floppy_driver -> do_track(FLOPPY_BASE, 0, DIR_READ);
+        floppy_driver -> ParseFATHeader();
+        floppy_driver -> read_root_directory();
+        for(int i = 0; i < floppy_driver->get_file_count(); i++) {
+            jackos::filesystem::FAT12DirectoryEntry file = floppy_driver->get_file(i);
+            printf(file.name);
+            printf("\n");
+        }
+    }
+    else if(jackos::libc::strcmp(argv[0], "drun") == 0) {
+        drun_file(argv[1]);
+    }
     else {
         printf("Unknown command: ");
         printf(argv[0]);
@@ -123,4 +143,8 @@ void Terminal::parse_command() {
     
     buffer[0] = '\0';
     buffer_len = 0;
+}
+
+bool Terminal::check_key(char key) {
+    return keyboard_statemap[(int)key];
 }

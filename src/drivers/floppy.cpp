@@ -14,6 +14,7 @@ FloppyDriver::FloppyDriver(jackos::hardware::InterruptManager* manager, jackos::
     system_clock = i_system_clock;
     // motor_ticks = 0;
     motor_state = 0;
+    // dmabuf = ::dmabuf;
 }
 
 void FloppyDriver::Activate() {
@@ -37,17 +38,19 @@ void FloppyDriver::Activate() {
     printf("\nFloppy drive 1: ");
     printf(drive_types[drives & 0xF]);
     printf("\n");
+    floppy_reset(FLOPPY_BASE);
 }
 
 void FloppyDriver::write_cmd(int base, char cmd) {
     jackos::hardware::Port8Bit MSR_Port(base + FLOPPY_MSR);
     jackos::hardware::Port8Bit FIFO_Port(base + FLOPPY_FIFO);
-    for(int i = 0; i < 100; i++) {
-        system_clock -> wait(1);
-        if(0x80 & MSR_Port.Read()) {
+    for(int i = 0; i < 600; i++) {
+        uint8_t msr = MSR_Port.Read();
+        if((msr & 0xC0) == 0x80) {
             FIFO_Port.Write(cmd);
             return;
         }
+        // system_clock->wait(1);
     }
     printf("Floppy disk write timeout.\n");
 }
@@ -56,10 +59,11 @@ unsigned char FloppyDriver::read_data(int base) {
     jackos::hardware::Port8Bit MSR_Port(base + FLOPPY_MSR);
     jackos::hardware::Port8Bit FIFO_Port(base + FLOPPY_FIFO);
     for(int i = 0; i < 600; i++) {
-        system_clock -> wait(1);
-        if(0x80 & MSR_Port.Read()) {
+        uint8_t msr = MSR_Port.Read();
+        if((msr & 0xC0) == 0xC0) {
             return FIFO_Port.Read();
         }
+        // system_clock->wait(1);
     }
     printf("Floppy disk read timeout.\n");
     return 0;
@@ -72,15 +76,14 @@ void FloppyDriver::check_interrupt(int base, int* st0, int* cyl) {
 }
 
 int FloppyDriver::calibrate(int base) {
-    printf("Calibrating floppy.\n");
     int i, st0, cyl = -1; // Bogus cylinder
     motor(base, MOTOR_ON);
     // freeze = true;
     for(int i = 0; i < 10; i++) {
+        freeze = true;
         write_cmd(base, CMD_RECALIBRATE);
-        // printf("Waiting for interrupt...\n");
-        // while(freeze) {} // Wait for interrupt on IRQ 6
-        // printf("Interrupt fired!\n");
+        write_cmd(base, 0x00);
+        while(freeze) { asm("hlt"); } // Wait for interrupt on IRQ 6
         check_interrupt(base, &st0, &cyl);
         if(st0 & 0xC0) {
             static const char* status[] = {
@@ -103,15 +106,12 @@ int FloppyDriver::calibrate(int base) {
 }
 
 int FloppyDriver::floppy_reset(int base) {
-    printf("Resetting floppy.\n");
     freeze = true;
     jackos::hardware::Port8Bit DOR_Port(base + FLOPPY_DOR);
     DOR_Port.Write(0x00); // Disable controller
     DOR_Port.Write(0x0C); // Enable controller
     
-    printf("Waiting for IRQ 6\n");
-    while(freeze) {} // Wait for interrupt on IRQ 6
-    printf("Continuing...\n");
+    while(freeze) { asm("hlt"); } // Wait for interrupt on IRQ 6
     
     int st0, cyl;
     check_interrupt(base, &st0, &cyl);
@@ -124,7 +124,6 @@ int FloppyDriver::floppy_reset(int base) {
     Base_Port.Write(0xdf); // Steprate = 3ms, Unload time = 240ms
     Base_Port.Write(0x02); // Load time = 16ms, no-DMA = 0
 
-    printf("Reset complete!\n");
     return calibrate(base);
 }
 
@@ -136,18 +135,15 @@ jackos::common::uint32_t FloppyDriver::HandleInterrupt(jackos::common::uint32_t 
 void FloppyDriver::motor(int base, int onoff) {
     jackos::hardware::Port8Bit DOR_Port(base + FLOPPY_DOR);
     if(onoff) {
-        if(!motor_state) {
+        if(motor_state == MOTOR_OFF) {
             DOR_Port.Write(0x1C); // Turn the motor on
-            system_clock -> wait(1); // The drive needs a moment
+            system_clock -> wait(5); // The drive needs a moment
         }
         motor_state = MOTOR_ON;
     }
     else {
-        if(motor_state == MOTOR_WAIT) {
-            printf("The floppy is already waiting?\n");
-        }
-        // motor_ticks = 300;
-        motor_state = MOTOR_WAIT;
+        DOR_Port.Write(0x0C);
+        motor_state = MOTOR_OFF;
     }
 }
 
@@ -159,15 +155,15 @@ void FloppyDriver::motor_kill(int base) {
 
 int FloppyDriver::seek(int base, unsigned cyli, int head) {
     int i, st0, cyl = -1; // Bogus cylinder
-    motor(base, MOTOR_ON);
+    // motor(base, MOTOR_ON);
     for(int i = 0; i < 10; i++) {
-        write_cmd(base, CMD_SEEK);
-        write_cmd(base, head << 2);
-        write_cmd(base, cyli);
-
         freeze = true;
-        while(freeze == false) {} // Wait for IRQ 6
+        write_cmd(base, CMD_SEEK);
+        write_cmd(base, (head << 2));
+        write_cmd(base, cyli);
+        while(freeze) { asm("hlt"); } // Wait for IRQ 6
         check_interrupt(base, &st0, &cyl);
+
         if(st0 & 0xC0) {
             static const char* status[] = {
                 "normal", "error", "invalid", "drive"
@@ -178,12 +174,14 @@ int FloppyDriver::seek(int base, unsigned cyli, int head) {
         }
 
         if(cyl == cyli) {
-            motor(base, MOTOR_OFF);
+            // motor(base, MOTOR_OFF);
             return 0;
         }
+
+        printf("Cylinder mismatch!\n");
     }
     printf("Floppy seek: 10 retries\n");
-    motor(base, MOTOR_OFF);
+    // motor(base, MOTOR_OFF);
     return -1;
 }
 
@@ -194,7 +192,7 @@ void FloppyDriver::dma_init(floppy_dir dir) {
         unsigned long l; // 32-bit
     } a, c; // Address and count
     a.l = (unsigned) &dmabuf;
-    c.l = (unsigned) FLOPPY_DMA_LEN - 1; // We have to subtract 1 because of how DMA counts
+    c.l = (unsigned) 0x1FF; // We have to subtract 1 because of how DMA counts
 
     if((a.l >> 24) || (c.l >> 16) || (((a.l&0xffff)+c.l)>>16)) {
         printf("Static buffer problem when initializing floppy DMA.\n");
@@ -233,7 +231,7 @@ int FloppyDriver::do_track(int base, unsigned logical_sector, floppy_dir dir) {
     int cyl = logical_sector / 36;
     unsigned char cmd;
 
-    static const int flags = 0xC0;
+    static const int flags = 0x40;
     switch(dir) {
         case DIR_READ:
             cmd = CMD_READ_DATA | flags;
@@ -249,24 +247,21 @@ int FloppyDriver::do_track(int base, unsigned logical_sector, floppy_dir dir) {
     if(seek(base, cyl, head)) return -1;
 
     for(int i = 0; i < 20; i++) {
-        // printf("Firing motor\n");
-        motor(base, MOTOR_ON);
         dma_init(dir);
-        system_clock -> wait(1); // Give some time to settle after seeking
-        // printf("Attempting read\n");
+        for(volatile int j = 0; j < 10000; j++);
 
         freeze = true;
         write_cmd(base, cmd); // Set above for current direction
-        write_cmd(base, (head << 2) | 0); // Head and drive
+        write_cmd(base, (head << 2)); // Head and drive
         write_cmd(base, cyl); // Cylinder
         write_cmd(base, head); // First head
         write_cmd(base, sector); // First sector (they count from 1)
         write_cmd(base, 2); // Bytes per sector, 128*2^x => 512
-        write_cmd(base, 18); // Number of tracks
+        write_cmd(base, sector); // End of Track (EOT)
         write_cmd(base, 0x1B); // GAP3 length; this is default for 3.5"
         write_cmd(base, 0xFF); // Data lengths
 
-        while(freeze); // Wait for IRQ 6
+        while(freeze) { asm("hlt"); }; // Wait for IRQ 6
 
         unsigned char st0, st1, st2, rcy, rhe, rse, bps;
         st0 = read_data(base); // Status information
@@ -295,10 +290,10 @@ int FloppyDriver::do_track(int base, unsigned logical_sector, floppy_dir dir) {
             printf("Floppy do sector: drive not ready\n");
             error = 1;
         }
-        if(st0 & 0x20) {
-            printf("Floppy do sector: CRC error\n");
-            error = 1;
-        }
+        // if(st0 & 0x20) {
+        //     // printf("Floppy do sector: CRC error\n");
+        //     error = 1;
+        // }
         if(st1 & 0x10) {
             printf("floppy_do_sector: controller timeout\n");
             error = 1;
@@ -343,7 +338,7 @@ int FloppyDriver::do_track(int base, unsigned logical_sector, floppy_dir dir) {
         }
 
         if(!error) {
-            motor(base, MOTOR_OFF);
+            // motor(base, MOTOR_OFF);
             return 0;
         }
         if(error > 1) {
@@ -354,18 +349,19 @@ int FloppyDriver::do_track(int base, unsigned logical_sector, floppy_dir dir) {
     }
 
     printf("Floppy do sector: 20 retries exhausted\n");
-    motor(base, MOTOR_OFF);
+    for(;;);
     return -1;
 }
 
 void FloppyDriver::read_root_directory() {
+    // motor(FLOPPY_BASE, MOTOR_ON);
     // Read the first 9 sectors to fill FAT
     for(int i = 0; i < 9; i++) {
         int sector = i+1;
         int track = sector / 18;
         int cyl = track;
 
-        do_track(FLOPPY_BASE, cyl, DIR_READ);
+        do_track(FLOPPY_BASE, sector, DIR_READ);
         memcpy(fat + i*512, (uint8_t*)dmabuf, 512); // Load the dmabuf into fat
     }
 
@@ -379,40 +375,25 @@ void FloppyDriver::read_root_directory() {
         memcpy(root_dir_sector_buffer + i*512, (uint8_t*)dmabuf, 512);
     }
 
+    // motor(FLOPPY_BASE, MOTOR_OFF);
+
     jackos::filesystem::FAT12DirectoryEntry* entries = (jackos::filesystem::FAT12DirectoryEntry*)root_dir_sector_buffer;
 
-    for(int i = 0; i < 224; i++) {
-        printfhex(i);
+    for(int i = 0; i < 8; i++) {
         system_clock -> wait(1);
         if(entries[i].name[0] == 0x00) break; // No more entries
         if(entries[i].name[0] == 0xE5) continue; // Deleted
         if(entries[i].attributes == 0x0F) continue; // Long file name entry
-
-        printf("File found: ");
-        for(int j = 0; j < 8; j++) {
-            char c = entries[i].name[j];
-            if(c == ' ') continue;
-            char foo[] = {c, '\0'};
-            printf(foo);
-        }
-        printf(".");
-        for(int j = 0; j < 3; j++) {
-            char c = entries[i].ext[j];
-            if(c == ' ') continue;
-            char foo[] = {c, '\0'};
-            printf(foo);
-        }
-        printf("\nOf size ");
-        printaddr(entries[i].fileSize);
-        printf(" bytes.\n");
-
-        file = entries[i];
+        files[i] = entries[i];
+        file_count = i+1;
     }
 }
 
 void FloppyDriver::load_file(uint16_t start_cluster, uint32_t size, uint8_t* destination) {
     uint16_t cluster = start_cluster;
     uint32_t bytes_read = 0;
+
+    // motor(FLOPPY_BASE, MOTOR_ON);
 
     while(cluster >= 0x002 && cluster <= 0xFEF && bytes_read < size) {
         int logical_sector = DATA_AREA_START + (cluster - 2);
@@ -435,6 +416,8 @@ void FloppyDriver::load_file(uint16_t start_cluster, uint32_t size, uint8_t* des
         cluster = fat12_get_entry(cluster);
     }
 
+    // motor(FLOPPY_BASE, MOTOR_OFF);
+
     if(bytes_read < size) {
         printf("Warning: only read ");
         printaddr(bytes_read);
@@ -452,9 +435,15 @@ void FloppyDriver::load_file(uint16_t start_cluster, uint32_t size, uint8_t* des
 uint16_t FloppyDriver::fat12_get_entry(uint16_t cluster) {
     uint16_t offset = (cluster * 3) / 2;
     uint16_t value;
-
     if(cluster & 1) {
-        return ((fat[offset] >> 4) | (fat[offset + 1] << 4)) & 0x0FFF;
+        value = ((fat[offset] >> 4) | (fat[offset + 1] << 4)) & 0x0FFF;
     }
-    return (fat[offset] | ((fat[offset + 1] & 0x0F) << 8)) & 0x0FFF;
+    else {
+        value = (fat[offset] | ((fat[offset + 1] & 0x0F) << 8)) & 0x0FFF;
+    }
+
+    printf(" -> ");
+    printfhex(value >> 8);
+    printfhex(value & 0xFF);
+    return value;
 }

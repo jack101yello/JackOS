@@ -99,6 +99,8 @@ namespace jackos {
             jackos::common::uint16_t UserCodeSegmentSelector();
             jackos::common::uint16_t UserDataSegmentSelector();
             jackos::common::uint16_t TSSSegmentSelector();
+
+            void SetKernelStack(jackos::common::uint32_t esp0);
     };
 }
 
