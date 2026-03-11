@@ -15,7 +15,7 @@ SyscallHandler::SyscallHandler(InterruptManager* interruptManager, uint8_t Inter
     terminal = nullptr;
 }
 
-SyscallHandler::SyscallHandler(InterruptManager* interruptManager, uint8_t InterruptNumber, VideoGraphicsArray* i_graphics, Terminal* i_terminal, Desktop* i_desktop, void (*i_runtime_loop)(jackos::gui::Desktop*, jackos::drivers::VideoGraphicsArray*, jackos::terminal::Terminal*))
+SyscallHandler::SyscallHandler(InterruptManager* interruptManager, uint8_t InterruptNumber, VideoGraphicsArray* i_graphics, Terminal* i_terminal, Desktop* i_desktop, void (*i_runtime_loop)(jackos::gui::Desktop*, jackos::drivers::VideoGraphicsArray*, jackos::terminal::Terminal*), CDROMDriver* i_cdrom_driver)
 : InterruptHandler(InterruptNumber + interruptManager->getHardwareOffset(), interruptManager)
 {
     graphicsMode = false;
@@ -23,6 +23,7 @@ SyscallHandler::SyscallHandler(InterruptManager* interruptManager, uint8_t Inter
     terminal = i_terminal;
     desktop = i_desktop;
     runtime_loop = i_runtime_loop;
+	cdrom_driver = i_cdrom_driver;
 }
 
 SyscallHandler::~SyscallHandler() {
@@ -31,6 +32,8 @@ SyscallHandler::~SyscallHandler() {
 
 void printf(const char* str);
 void printaddr(int n);
+
+extern MemoryManager kmm;
 
 uint32_t SyscallHandler::HandleInterrupt(uint32_t esp) {
     CPUState* cpu = (CPUState*)esp;
@@ -75,6 +78,29 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp) {
             int32_t puty = (int32_t)cpu -> ecx;
             jackos::drivers::COLOR_CODE color = (jackos::drivers::COLOR_CODE)cpu -> edx;
             graphics -> PutPixel(putx, puty, color);
+            break;
+        }
+        case MALLOC:{
+            uint32_t size = cpu -> ebx;
+            cpu -> ecx = (uint32_t)kmm.malloc(size);
+            break;
+        }
+        case FREE:{
+            void* ptr = (void*)cpu -> ebx;
+            kmm.free(ptr);
+            break;
+        }
+        case CALLOC: // To be implemented in the memory manager
+            break;
+        case REALLOC: // To be implemented in the memory manager
+            break;
+        case SWAP_FRAMEBUFFER:
+            graphics -> SwapFramebuffer((uint32_t*)cpu -> ebx);
+            break;
+        case FOPEN:{
+            break;
+        }
+        case FCLOSE:{
             break;
         }
         default:

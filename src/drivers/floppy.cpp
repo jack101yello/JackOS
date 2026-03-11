@@ -386,6 +386,9 @@ void FloppyDriver::read_root_directory() {
         if(entries[i].attributes == 0x0F) continue; // Long file name entry
         files[i] = entries[i];
         file_count = i+1;
+        printf("Found file: ");
+        printf(entries[i].name);
+        printf("\n");
     }
 }
 

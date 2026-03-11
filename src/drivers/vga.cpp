@@ -241,6 +241,14 @@ void VideoGraphicsArray::SetTextMode() {
     graphicsControllerDataPort.Write(0x0E);
 }
 
+void VideoGraphicsArray::SwapFramebuffer(jackos::common::uint32_t* newframebuffer) {
+	for(int i = 0; i < SCREEN_WIDTH; i++) {
+		for(int j = 0; j < SCREEN_HEIGHT; j++) {
+			framebuffer[i][j] = newframebuffer[i + j*SCREEN_WIDTH];
+		}
+	}
+}
+
 void VideoGraphicsArray::WriteFont() {
     const uint8_t vga_font_8x16[256*16] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

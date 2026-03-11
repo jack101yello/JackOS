@@ -12,6 +12,7 @@
 #define FS_MOUNTPOINT 0X08
 
 namespace jackos {
+	namespace drivers { class CDROMDriver; } // Forward declaration
     namespace filesystem {
 
         typedef jackos::common::uint32_t (*read_type_t)(struct fs_node*, jackos::common::uint32_t, jackos::common::uint32_t, jackos::common::uint8_t*);
@@ -41,6 +42,10 @@ namespace jackos {
             close_type_t close;
             readdir_type_t readdir;
             finddir_type_t finddir;
+			// Information about the volume containing the file?
+			// Need to store information about where to find the file on the volume. Sector, size?
+			jackos::common::uint32_t extent_location; // The sector storing the fs_node
+			jackos::drivers::CDROMDriver* cdrom_driver; // A pointer to a CDROM driver to use
             struct fs_node* ptr; // Used by mountpoints and symbolic links/shortcuts
         } fs_node_t;
 

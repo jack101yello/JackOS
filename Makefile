@@ -30,6 +30,7 @@ objects = obj/loader.o \
 		  obj/terminal/terminal.o \
 		  obj/terminal/terminal_commands.o \
 		  obj/drivers/floppy.o \
+		  obj/drivers/cdrom.o \
 		  obj/libc/libc.o \
 		  obj/common/common.o \
 		  obj/kernel.o
@@ -69,8 +70,10 @@ jackos.iso: jackoskernel.bin initrd.elf
 	mkdir -p isodir/boot/grub
 	cp $< isodir/boot/jackoskernel.bin
 	cp initrd.elf isodir/boot/initrd.elf
+	cp /home/jack/JackOS-Programs/Doom/doomgeneric/doomgeneric isodir/boot/doom.elf
 	echo 'menuentry "JackOS" {' > isodir/boot/grub/grub.cfg
 	echo '	multiboot /boot/jackoskernel.bin' >> isodir/boot/grub/grub.cfg
+	echo '	module /boot/doom.elf doom' >> isodir/boot/grub/grub.cfg
 	echo '}' >> isodir/boot/grub/grub.cfg
 	grub-mkrescue -o jackos.iso isodir
 
@@ -87,10 +90,10 @@ install-libc: libk-includes libk-objects
 	# $(binpath)/i386-elf-ar rcs libc/libk.a 
 
 run: jackos.iso
-	qemu-system-i386 -cdrom jackos.iso -drive file="/mnt/c/users/jack/desktop/JackOS Program Floppies/pong.vfd",format=raw,if=floppy -boot d -m 512
+	qemu-system-i386 -cdrom jackos.iso -drive file=/home/jack/JackOS-Programs/testrom.iso,media=cdrom -boot d -m 512
 
 debug: jackos.iso
-	qemu-system-i386 -s -S -cdrom jackos.iso -drive file="/mnt/c/users/jack/desktop/JackOS Program Floppies/pong.vfd",format=raw,if=floppy -boot d
+	qemu-system-i386 -s -S -cdrom jackos.iso -boot d -drive file=/home/jack/JackOS-Programs/testrom.iso,media=cdrom
 
 .PHONY: clean install install-libc run
 clean: 

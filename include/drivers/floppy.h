@@ -7,6 +7,7 @@
 #include <drivers/pit.h>
 #include <filesystem/fat12.h>
 #include <common/common.h>
+#include <filesystem/vfs.h>
 
 #define FLOPPY_BASE 0x03F0
 #define FLOPPY_IRQ 6

@@ -59,6 +59,7 @@ namespace jackos {
                 virtual void FillRectangle(jackos::common::uint32_t x, jackos::common::uint32_t y, jackos::common::uint32_t w, jackos::common::uint32_t h, jackos::drivers::COLOR_CODE color);
                 virtual void DrawFrame(jackos::common::uint32_t width, jackos::common::uint32_t height);
                 virtual void SetTextMode();
+                virtual void SwapFramebuffer(jackos::common::uint32_t* framebuffer);
                 virtual void WaitForVerticalRetrace();
                 void WriteFont();
         };

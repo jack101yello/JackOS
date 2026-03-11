@@ -20,6 +20,7 @@
 #include <common/common.h>
 #include <terminal/terminal.h>
 #include <drivers/floppy.h>
+#include <drivers/cdrom.h>
 
 using namespace jackos;
 using namespace jackos::common;
@@ -123,10 +124,6 @@ class MouseToConsole : public MouseEventHandler {
 };
 
 MemoryManager* kmm;
-
-void sysprintf(const char* str) {
-    asm("int $0x80" : : "a" (4), "b" (str));
-}
 
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
@@ -234,10 +231,16 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     FloppyDriver floppy_driver(&interrupts, &system_clock);
     drvManager.AddDriver(&floppy_driver);
 
+    printf("Initializing CDROM.\n");
+    CDROMDriver cdrom_driver(&interrupts, &system_clock);
+    drvManager.AddDriver(&cdrom_driver);
+
+    printf("Initializing Terminal.\n");
     jackos::terminal::Terminal terminal(multiboot_structure, &gdt, &floppy_driver, &system_clock);
     KeyboardDriver keyboard_driver(&interrupts, &terminal);
     drvManager.AddDriver(&keyboard_driver);
 
+    printf("Initializing stack.\n");
     static uint8_t kernel_stack[8192] __attribute__((aligned(16)));
     gdt.SetKernelStack((uint32_t)(kernel_stack + sizeof(kernel_stack)));
 
@@ -245,9 +248,14 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
 
     printf("Setting up syscalls.\n");
     jackos::gui::Desktop desktop(SCREEN_WIDTH, SCREEN_HEIGHT, 0x00, 0x00, 0xA8);
-    SyscallHandler syscalls(&interrupts, 0x80, &vga, &terminal, &desktop, &runtime_loop);
+    SyscallHandler syscalls(&interrupts, 0x80, &vga, &terminal, &desktop, &runtime_loop, &cdrom_driver);
 
     drvManager.ActivateAll();
 
-    runtime_loop(&desktop, &vga, &terminal);
+	printf("\e"); // Clear screen
+	fs_node_t newfile = cdrom_driver.cdrom_open("TEST.TXT");	
+	uint8_t* buffer = (uint8_t*)memoryManager.malloc(newfile.length + 1);
+	newfile.read(&newfile, 0, 0, buffer);
+	
+    // runtime_loop(&desktop, &vga, &terminal);
 }
