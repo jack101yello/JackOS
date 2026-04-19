@@ -9,6 +9,8 @@
 #include <filesystem/iso9660.h>
 #include <filesystem/vfs.h>
 #include <libc/libc.h>
+#include <filesystem/ELF/elfloader.h>
+#include <gdt.h>
 
 namespace jackos {
     namespace drivers {
@@ -19,13 +21,14 @@ namespace jackos {
 
         class CDROMDriver : public jackos::hardware::InterruptHandler, public jackos::drivers::Driver {
             private:
+				jackos::GlobalDescriptorTable* gdt;
                 jackos::hardware::InterruptManager* interrupt_manager;
                 jackos::drivers::PITEventHandler* system_clock;
                 int port;
                 bool is_slave;
             
             public:
-                CDROMDriver(jackos::hardware::InterruptManager* i_manager, jackos::drivers::PITEventHandler* i_system_clock);
+                CDROMDriver(jackos::hardware::InterruptManager* i_manager, jackos::drivers::PITEventHandler* i_system_clock, jackos::GlobalDescriptorTable* i_gdt);
                 void Activate();
                 void Identify();
                 void io_wait();
@@ -36,6 +39,7 @@ namespace jackos {
                 int read_capacity(capacity_info_t* info);
                 int test_unit_ready();
 				jackos::filesystem::fs_node_t cdrom_open(char* filename); // Return a filesystem node for a given file
+				void run(); // Run the CD as an executable
 
         };
 

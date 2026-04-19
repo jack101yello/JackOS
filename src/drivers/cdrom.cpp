@@ -9,10 +9,11 @@ extern void printf(const char* msg);
 extern void printfhex(int n);
 extern void printaddr(int addr);
 
-CDROMDriver::CDROMDriver(jackos::hardware::InterruptManager* i_manager, jackos::drivers::PITEventHandler* i_system_clock)
+CDROMDriver::CDROMDriver(jackos::hardware::InterruptManager* i_manager, jackos::drivers::PITEventHandler* i_system_clock, jackos::GlobalDescriptorTable* i_gdt)
 : jackos::hardware::InterruptHandler(0x2E, i_manager) {
     interrupt_manager = i_manager;
     system_clock = i_system_clock;
+	gdt = i_gdt;
 }
 
 void CDROMDriver::Activate() {
@@ -133,17 +134,31 @@ int CDROMDriver::send_packet(uint8_t* cmd, uint16_t max_bytes, bool use_dma, uin
         // Wait for IRQ
         return 0;
     }
+	uint8_t* buf_ptr = (uint8_t*)buffer;
+	uint32_t total_read = 0;
+	io_wait();
 
-    while(1) {
+
+    while(total_read < buffer_size) {
         uint8_t status = com_port.Read();
         if(status & 0x01) return -1; // Error
-        if(!(status & 0x80) && (status & 0x08)) break; // It's ready
+
+		if(status & 0x08) {
+			uint16_t byte_count = (lba_high_port.Read() << 8) | lba_mid_port.Read();
+			if(byte_count == 0) break;
+			if(buf_ptr && byte_count > 0) {
+				insw(port, buf_ptr, byte_count / 2);
+				buf_ptr += byte_count;
+				total_read += byte_count;
+			}
+		}
     }
 
-    uint16_t byte_count = (lba_high_port.Read() << 8) | lba_mid_port.Read();
-    if(buffer && byte_count > 0) {
-        insw(port, buffer, byte_count/2);
-    }
+
+//  uint16_t byte_count = (lba_high_port.Read() << 8) | lba_mid_port.Read();
+//  if(buffer && byte_count > 0) {
+//      insw(port, buffer, byte_count/2);
+//  }
 
     int timeout = 1000000;
     while(timeout-- > 0) {
@@ -216,6 +231,9 @@ fs_node_t CDROMDriver::cdrom_open(char* filename) {
 		DirectoryEntry* entry = (DirectoryEntry*)ptr;
 		char* name = (char*)(ptr + 33);
 		uint8_t name_len = *(ptr + 32);
+		for(int i = 0; i < name_len; i++) {
+			if(name[i] == ';') name[i] = '\0'; // Remove the version padding
+		}
 		if(jackos::libc::strcmp(name, filename) == 0) {
 			found = true;
 			break;
@@ -223,6 +241,7 @@ fs_node_t CDROMDriver::cdrom_open(char* filename) {
 		ptr += length;
 	}
 	if(!found) {
+		printf("File not found\n");
 		return filesystem_node; // Empty file because ours wasn't found
 	}
 	
@@ -232,10 +251,57 @@ fs_node_t CDROMDriver::cdrom_open(char* filename) {
 		filesystem_node.name[i] = (char)(*(ptr + 33 + i));
 	}
 	filesystem_node.read = jackos::drivers::cdrom_read;
-	filesystem_node.length = (uint32_t)(*(ptr + 10));
-	filesystem_node.extent_location = (uint32_t)(*(ptr + 2)); // The LBA of the file
+	filesystem_node.length = *(uint32_t*)(ptr + 10);
+	filesystem_node.extent_location = *(uint32_t*)(ptr + 2); // The LBA of the file
 	filesystem_node.cdrom_driver = this; // I personally dislike this implementation, but I don't see a better way
 	return filesystem_node;
+}
+
+void CDROMDriver::run() {
+	// First we must find an ELF to run
+	struct fs_node filesystem_node;
+	char* filename;
+	jackos::common::memset((uint8_t*)&filesystem_node, 0, sizeof(fs_node));
+	uint8_t pvd_buffer[4096];
+	read_sectors(CDROM_DATA_SECTOR_START, 1, (uint16_t*)pvd_buffer);
+	PrimaryVolumeDescriptor* pvd = (PrimaryVolumeDescriptor*)pvd_buffer;
+	DirectoryEntry* rootdir = (DirectoryEntry*) pvd -> root_dir_entry;
+	uint8_t root_buffer[8192];
+	read_sectors(rootdir -> extent_location, (rootdir -> data_length + 2047) / 2048, (uint16_t*)root_buffer);
+	uint8_t* ptr = root_buffer;
+	uint8_t* end = root_buffer + rootdir -> data_length;
+	bool found = false;
+	while(ptr < end) {
+		uint8_t length = ptr[0];
+		if(length == 0) {
+			ptr = (uint8_t*)(((uint32_t)ptr + 2047) & ~2047);
+			continue;
+		}
+		DirectoryEntry* entry = (DirectoryEntry*)ptr;
+		char* name = (char*)(ptr + 33);
+		uint8_t name_len = *(ptr + 32);
+		for(int i = 0; i < name_len; i++) {
+			if(name[i] == ';') name[i] = '\0';
+		}
+		for(int i = 0; i < name_len-4; i++) {
+			if(name[i] == '.' && name[i+1] == 'E' && name[i+2] == 'L' && name[i+3] == 'F') {
+				found = true;
+				filename = name;
+				break;
+			}
+		}
+		if(found == true) break;
+		ptr += length;
+	}
+	if(!found) {
+		printf("CD not executable.\n");
+		return;
+	}
+	filesystem_node = cdrom_open(filename);
+	uint8_t file_buffer[512 * 1024];
+	read_sectors(filesystem_node.extent_location, (filesystem_node.length + 2047) / 2048, (uint16_t*)file_buffer);
+	jackos::filesystem::elf::Elf_File elf_executable((Elf_Ehdr*)file_buffer, gdt);
+	elf_executable.run();
 }
 
 uint32_t jackos::drivers::cdrom_read(fs_node_t* node, uint32_t offset, uint32_t size, uint8_t* buffer) {

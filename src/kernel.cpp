@@ -232,7 +232,7 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     drvManager.AddDriver(&floppy_driver);
 
     printf("Initializing CDROM.\n");
-    CDROMDriver cdrom_driver(&interrupts, &system_clock);
+    CDROMDriver cdrom_driver(&interrupts, &system_clock, &gdt);
     drvManager.AddDriver(&cdrom_driver);
 
     printf("Initializing Terminal.\n");
@@ -253,9 +253,9 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     drvManager.ActivateAll();
 
 	printf("\e"); // Clear screen
-	fs_node_t newfile = cdrom_driver.cdrom_open("TEST.TXT");	
-	uint8_t* buffer = (uint8_t*)memoryManager.malloc(newfile.length + 1);
-	newfile.read(&newfile, 0, 0, buffer);
+	printf("Running disk...\n");
+	cdrom_driver.run();
+	printf("Disk run.\n");
 	
-    // runtime_loop(&desktop, &vga, &terminal);
+    //runtime_loop(&desktop, &vga, &terminal);
 }

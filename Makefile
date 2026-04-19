@@ -70,10 +70,12 @@ jackos.iso: jackoskernel.bin initrd.elf
 	mkdir -p isodir/boot/grub
 	cp $< isodir/boot/jackoskernel.bin
 	cp initrd.elf isodir/boot/initrd.elf
-	cp /home/jack/JackOS-Programs/Doom/doomgeneric/doomgeneric isodir/boot/doom.elf
+	cp ~/JackOS-Programs/TestProgram/program.elf isodir/boot/prog.elf
+	echo 'GRUB_TIMEOUT=0' > isodir/boot/grub/grub.cfg
+	echo 'GRUB_HIDDEN_TIMEOUT=0' > isodir/boot/grub/grub.cfg
 	echo 'menuentry "JackOS" {' > isodir/boot/grub/grub.cfg
 	echo '	multiboot /boot/jackoskernel.bin' >> isodir/boot/grub/grub.cfg
-	echo '	module /boot/doom.elf doom' >> isodir/boot/grub/grub.cfg
+	echo '	module /boot/prog.elf PROG' >> isodir/boot/grub/grub.cfg
 	echo '}' >> isodir/boot/grub/grub.cfg
 	grub-mkrescue -o jackos.iso isodir
 
