@@ -8,6 +8,7 @@ namespace jackos {
         void strcpy(char* dest, char* src);
         jackos::common::size_t strlen(const char* str);
         int strcmp(const char *s1, const char *s2);
+		int weakstrcmp(const char *s1, const char *s2);
     }
 }
 

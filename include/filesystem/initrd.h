@@ -9,6 +9,10 @@
 namespace jackos {
     namespace filesystem {
 
+		jackos::common::uint32_t initrd_read(fs_node_t* node, jackos::common::uint32_t offset, jackos::common::uint32_t size, jackos::common::uint8_t* buffer);
+		struct dirent *initrd_readdir(fs_node_t* node, jackos::common::uint32_t index);
+		fs_node_t* initrd_finddir(fs_node_t* node, char *name);
+
         typedef struct {
             jackos::common::uint32_t nfiles; // The number of files in the ramdisk
         } initrd_header_t;
@@ -21,6 +25,10 @@ namespace jackos {
         } initrd_file_header_t;
 
         fs_node_t* initialize_initrd(jackos::common::uint32_t location);
+		
+		extern initrd_header_t* initrd_header;
+		extern initrd_file_header_t* file_headers;
+		extern fs_node_t* root_nodes;
     }
 }
 

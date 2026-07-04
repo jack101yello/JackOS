@@ -65,7 +65,6 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp) {
             printaddr(cpu -> ecx);
             break;
         case QUIT: // quit
-            printf("Exit syscall received!\n");
             if(graphicsMode) {
                 graphicsMode = false;
                 graphics -> SetTextMode();

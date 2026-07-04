@@ -28,7 +28,6 @@ objects = obj/loader.o \
 		  obj/filesystem/initrd.o \
 		  obj/filesystem/ELF/elfloader.o \
 		  obj/terminal/terminal.o \
-		  obj/terminal/terminal_commands.o \
 		  obj/drivers/floppy.o \
 		  obj/drivers/cdrom.o \
 		  obj/libc/libc.o \
@@ -46,6 +45,9 @@ libk_objs = \
 			libc/string/memset.o \
 			libc/string/strlen.o
 
+terminal-programs =	term/helloworld.elf \
+	term/clear.elf
+
 obj/%.o: src/%.cpp
 	mkdir -p $(@D)
 	$(binpath)/$(target)-g++ $(GPPPARAMS) -o $@ -c $<
@@ -60,22 +62,31 @@ libc/%.o: libc/%.c
 jackoskernel.bin: linker.ld $(objects)
 	$(binpath)/$(target)-ld $(LDPARAMS) -T $< -o $@ $(objects)
 
+term/%.o: term/%.cpp
+	$(binpath)/$(target)-g++ -ffreestanding -o $@ -c $<
+
+term/%.elf: term/%.o
+	$(binpath)/$(target)-g++ -v $< -o $@
+
 initrd.elf:
 	gcc Initrd/makeinitrd.c -o makeinitrd.out
 	cp Initrd/ProgramFiles/testfile.txt testfile.txt
 	./makeinitrd.out testfile.txt testfile.txt
 	rm testfile.txt
 
-jackos.iso: jackoskernel.bin initrd.elf
-	mkdir -p isodir/boot/grub
+jackos.iso: jackoskernel.bin initrd.elf $(terminal-programs)
+	mkdir -p isodir/boot/grub isodir/boot/term
 	cp $< isodir/boot/jackoskernel.bin
 	cp initrd.elf isodir/boot/initrd.elf
-	cp ~/JackOS-Programs/TestProgram/program.elf isodir/boot/prog.elf
 	echo 'GRUB_TIMEOUT=0' > isodir/boot/grub/grub.cfg
 	echo 'GRUB_HIDDEN_TIMEOUT=0' > isodir/boot/grub/grub.cfg
 	echo 'menuentry "JackOS" {' > isodir/boot/grub/grub.cfg
 	echo '	multiboot /boot/jackoskernel.bin' >> isodir/boot/grub/grub.cfg
-	echo '	module /boot/prog.elf PROG' >> isodir/boot/grub/grub.cfg
+	@for terminalcommand in $(terminal-programs); do \
+		cp $$terminalcommand isodir/boot/$$terminalcommand;\
+		name=$$(basename "$$terminalcommand" .elf);\
+		echo "	module /boot/$$terminalcommand $$name" >> isodir/boot/grub/grub.cfg;\
+		done
 	echo '}' >> isodir/boot/grub/grub.cfg
 	grub-mkrescue -o jackos.iso isodir
 
@@ -92,7 +103,7 @@ install-libc: libk-includes libk-objects
 	# $(binpath)/i386-elf-ar rcs libc/libk.a 
 
 run: jackos.iso
-	qemu-system-i386 -cdrom jackos.iso -drive file=/home/jack/JackOS-Programs/testrom.iso,media=cdrom -boot d -m 512
+	qemu-system-i386 -cdrom jackos.iso -boot d -m 512
 
 debug: jackos.iso
 	qemu-system-i386 -s -S -cdrom jackos.iso -boot d -drive file=/home/jack/JackOS-Programs/testrom.iso,media=cdrom
@@ -100,5 +111,5 @@ debug: jackos.iso
 .PHONY: clean install install-libc run
 clean: 
 	rm -rfv isodir obj sysroot
-	rm -v *.bin *.iso *.elf *.out
-	rm -v $(libk_objs)
+	rm -vf *.bin *.iso *.elf *.out
+	rm -vf term/*.elf term/*.o

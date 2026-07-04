@@ -9,15 +9,19 @@ using namespace jackos;
 using namespace jackos::common;
 using namespace jackos::filesystem;
 
-jackos::filesystem::initrd_header_t* initrd_header; // The header
-jackos::filesystem::initrd_file_header_t* file_headers; // The list of file headers
-jackos::filesystem::fs_node_t* initrd_root; // The root directory node
-jackos::filesystem::fs_node_t* initrd_dev; // Directory node for /dev
-jackos::filesystem::fs_node_t* root_nodes; // List of file nodes
-int nroot_nodes; // The number of file nodes
+namespace jackos {
+	namespace filesystem {
+		jackos::filesystem::initrd_header_t* initrd_header; // the header
+		jackos::filesystem::initrd_file_header_t* file_headers; // the list of file headers
+		jackos::filesystem::fs_node_t* initrd_root; // the root directory node
+		jackos::filesystem::fs_node_t* initrd_dev; // directory node for /dev
+		jackos::filesystem::fs_node_t* root_nodes; // list of file nodes
+		int nroot_nodes; // the number of file nodes
 jackos::filesystem::dirent dirent_t;
+	}
+}
 
-static uint32_t initrd_read(fs_node_t* node, uint32_t offset, uint32_t size, uint8_t* buffer) {
+uint32_t jackos::filesystem::initrd_read(fs_node_t* node, uint32_t offset, uint32_t size, uint8_t* buffer) {
     initrd_file_header_t header = file_headers[node -> inode];
     if(offset > header.length) {
         return 0;
@@ -25,11 +29,11 @@ static uint32_t initrd_read(fs_node_t* node, uint32_t offset, uint32_t size, uin
     if(offset + size > header.length) {
         size = header.length - offset;
     }
-    jackos::common::memcpy(buffer, (uint8_t*)(header.offset+offset+sizeof(Elf_Ehdr)), size);
+    jackos::common::memcpy(buffer, (uint8_t*)(node -> extent_location), size);
     return size;
 }
 
-static struct dirent *initrd_readdir(fs_node_t* node, uint32_t index) {
+struct dirent *jackos::filesystem::initrd_readdir(fs_node_t* node, uint32_t index) {
     if(node == initrd_root && index == 0) {
         char foo[] = {'d', 'e', 'v', '\0'};
         jackos::libc::strcpy(dirent_t.name, foo);
@@ -48,7 +52,7 @@ static struct dirent *initrd_readdir(fs_node_t* node, uint32_t index) {
     return &dirent_t;
 }
 
-static fs_node_t* initrd_finddir(fs_node_t* node, char *name) {
+fs_node_t* jackos::filesystem::initrd_finddir(fs_node_t* node, char *name) {
     if(node == initrd_root && !jackos::libc::strcmp(name, "dev")) {
         return initrd_dev;
     }

@@ -13,6 +13,8 @@
 #include <multitasking.h>
 #include <drivers/floppy.h>
 #include <filesystem/fat12.h>
+#include <filesystem/initrd.h>
+#include <memorymanagement.h>
 
 #define TERMINAL_WIDTH 33
 

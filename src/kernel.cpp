@@ -236,6 +236,7 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
     drvManager.AddDriver(&cdrom_driver);
 
     printf("Initializing Terminal.\n");
+	printf("Initializing command ramdisk...\n");
     jackos::terminal::Terminal terminal(multiboot_structure, &gdt, &floppy_driver, &system_clock);
     KeyboardDriver keyboard_driver(&interrupts, &terminal);
     drvManager.AddDriver(&keyboard_driver);
@@ -248,14 +249,10 @@ extern "C" void kernel_main(struct multiboot* multiboot_structure, uint32_t magi
 
     printf("Setting up syscalls.\n");
     jackos::gui::Desktop desktop(SCREEN_WIDTH, SCREEN_HEIGHT, 0x00, 0x00, 0xA8);
-    SyscallHandler syscalls(&interrupts, 0x80, &vga, &terminal, &desktop, &runtime_loop, &cdrom_driver);
+    SyscallHandler syscalls(&interrupts, 0x80, &vga, &terminal, &desktop, &runtime_loop, nullptr);
 
     drvManager.ActivateAll();
 
-	printf("\e"); // Clear screen
-	printf("Running disk...\n");
-	cdrom_driver.run();
-	printf("Disk run.\n");
-	
-    //runtime_loop(&desktop, &vga, &terminal);
+	clear_screen();
+    runtime_loop(&desktop, &vga, &terminal);
 }
